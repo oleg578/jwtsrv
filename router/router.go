@@ -5,8 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
+	"time"
 
+	"../config"
 	_ "github.com/go-sql-driver/mysql" //mysql driver
+	"github.com/google/uuid"
+	"github.com/oleg578/jwts"
 )
 
 // APIResp response struct
@@ -36,8 +41,60 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	ResponseBuild(w, Resp)
 }
 
-// CreateHandler route
+//Authorize route
 // input POST JSON newuser
+// return {"access_token":"abcd","refresh_token":"abcd"}
+func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
+	var (
+		Resp APIResp
+	)
+	if r.Method != "POST" {
+		err := fmt.Errorf("wrong request type")
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		log.Println(err)
+	}
+	tm := time.Now()
+	texp := tm.Add(time.Minute * config.AccessDuration)
+	tref := tm.Add(time.Minute * config.RefreshDuration)
+	payload := make(map[string]interface{})
+	payload["uid"] = uuid.New().String()
+	payload["uip"] = r.RemoteAddr
+	payload["acc"] = 12018948
+	payload["exp"] = texp.Unix()
+	sr := strings.NewReader(payload["uid"].(string) +
+		payload["uip"].(string) +
+		config.SecretKey)
+	jti, errjti := uuid.NewRandomFromReader(sr)
+	if errjti != nil {
+		jti, errjti = uuid.NewRandom()
+		if errjti != nil {
+			jti = uuid.New()
+		}
+	}
+	payload["jti"] = jti.String()
+	AccessToken, err := jwts.CreateTokenHS256(payload, config.SecretKey)
+	if err != nil {
+		log.Println(err)
+	}
+	payload["exp"] = tref.Unix()
+	RefreshToken, errRef := jwts.CreateTokenHS256(payload, config.SecretKey)
+	if errRef != nil {
+		log.Println(errRef)
+	}
+	Resp.Response = struct {
+		AccessToken  string `json:"access_token"`
+		RefreshToken string `json:"refresh_token"`
+	}{
+		AccessToken.RawStr,
+		RefreshToken.RawStr,
+	}
+	ResponseBuild(w, Resp)
+}
+
+// CreateHandler route
 func CreateHandler(w http.ResponseWriter, r *http.Request) {
 	const MAXBODYLENGTH = 1024
 	var (
@@ -48,7 +105,6 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
-	defer r.Body.Close()
 	Resp.Response = "OK"
 	Resp.Error = ""
 	ResponseBuild(w, Resp)

@@ -11,6 +11,7 @@ import (
 
 func main() {
 	rootHdlr := http.HandlerFunc(router.IndexHandler)
+	authorizeHdlr := http.HandlerFunc(router.AuthorizeHandler)
 	createHdlr := http.HandlerFunc(router.CreateHandler)
 	deleteHdlr := http.HandlerFunc(router.DeleteHandler)
 	searchHdlr := http.HandlerFunc(router.SearchHandler)
@@ -21,6 +22,9 @@ func main() {
 	//index route
 	//GET
 	mux.Handle("/", rootHdlr)
+	//POST
+	//params apid, email, passwd
+	mux.Handle("/authorize", authorizeHdlr)
 	//create route
 	//POST source is JSON user
 	mux.Handle("/create", createHdlr)

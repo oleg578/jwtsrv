@@ -1,0 +1,7 @@
+{
+    "uid": "user ID",
+    "uip": "user IP",
+    "acc": "user account access",
+    "exp": "expiration time",
+    "jti": "Unique JWT ID"
+}
