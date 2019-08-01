@@ -29,27 +29,28 @@ func TestNewUser(t *testing.T) {
 }
 
 func TestUser_Save(t *testing.T) {
-	type fields struct {
-		ID       string
-		Email    string
-		Password string
-		Claims   []Claim
-	}
+	newuser := NewUser()
+	newuser.Email = "oleh@example.com"
+	newuser.Password = "oleh12345"
+	clm := Claim{}
+	clm.Resource = "accounts.example.com"
+	clm.Assert = make(map[string]string)
+	clm.Assert["Account"] = "12345"
+	newuser.Claims = append(newuser.Claims, clm)
 	tests := []struct {
-		name    string
-		fields  fields
-		wantErr bool
+		name     string
+		testuser *User
+		wantErr  bool
 	}{
-		// TODO: Add test cases.
+		{
+			"userOleh",
+			newuser,
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := &User{
-				ID:       tt.fields.ID,
-				Email:    tt.fields.Email,
-				Password: tt.fields.Password,
-				Claims:   tt.fields.Claims,
-			}
+			u := tt.testuser
 			if err := u.Save(); (err != nil) != tt.wantErr {
 				t.Errorf("User.Save() error = %v, wantErr %v", err, tt.wantErr)
 			}

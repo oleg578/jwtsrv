@@ -9,15 +9,15 @@ import (
 )
 
 type Claim struct {
-	Resource string            `json:"resource"`
-	Assert   map[string]string `json:"assert"`
+	Resource string            `json:"Resource"`
+	Assert   map[string]string `json:"Assert"`
 }
 
 type User struct {
-	ID       string  `json:"id"`
-	Email    string  `json:"email"`
-	Password string  `json:"password"`
-	Claims   []Claim `json:"claims"`
+	ID       string  `json:"ID"`
+	Email    string  `json:"Email"`
+	Password string  `json:"Password"`
+	Claims   []Claim `json:"Claims"`
 }
 
 func NewUser() *User {
@@ -41,7 +41,8 @@ func (u *User) Save() error {
 	if err != nil {
 		return err
 	}
-	return nil
+	err = u.EmailIndAppend()
+	return err
 }
 
 func redisConn() (c redis.Conn, err error) {
@@ -51,4 +52,17 @@ func redisConn() (c redis.Conn, err error) {
 	}
 	_, err = c.Do("SELECT", config.RedisDB)
 	return c, err
+}
+
+func (u *User) EmailIndAppend() error {
+	c, err := redisConn()
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	c.Do("HSET", "uidbyemail", u.Email, u.ID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
