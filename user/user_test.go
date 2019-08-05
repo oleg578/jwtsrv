@@ -3,6 +3,8 @@ package user
 import (
 	"reflect"
 	"testing"
+
+	"github.com/google/uuid"
 )
 
 func TestNew(t *testing.T) {
@@ -33,6 +35,7 @@ func TestUser_Save(t *testing.T) {
 	newuser.Email = "oleh@example.com"
 	newuser.Password = "oleh12345"
 	clm := Claim{}
+	clm.AppID = uuid.New().String()
 	clm.Resource = "accounts.example.com"
 	clm.Asserts = make(AssertsMap)
 	clm.Asserts["Account"] = "12345"
@@ -83,7 +86,19 @@ func Test_redisConn(t *testing.T) {
 }
 
 func TestNewClaim(t *testing.T) {
+	newid := uuid.New().String()
+	rsc := "specialresource.com"
+	asserts := make(AssertsMap, 3)
+	asserts["role"] = "admin"
+	asserts["account"] = "12846978"
+	asserts["another"] = "something"
+	clm := &Claim{
+		AppID:    newid,
+		Resource: rsc,
+		Asserts:  asserts,
+	}
 	type args struct {
+		appid    string
 		resource string
 		asserts  AssertsMap
 	}
@@ -92,11 +107,19 @@ func TestNewClaim(t *testing.T) {
 		args args
 		want *Claim
 	}{
-		// TODO: Add test cases.
+		{
+			"NewClaimTest",
+			args{
+				newid,
+				rsc,
+				asserts,
+			},
+			clm,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewClaim(tt.args.resource, tt.args.asserts); !reflect.DeepEqual(got, tt.want) {
+			if got := NewClaim(tt.args.appid, tt.args.resource, tt.args.asserts); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewClaim() = %v, want %v", got, tt.want)
 			}
 		})

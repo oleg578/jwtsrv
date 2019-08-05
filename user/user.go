@@ -29,9 +29,9 @@ func New() *User {
 	}
 }
 
-func NewClaim(resource string, asserts AssertsMap) *Claim {
+func NewClaim(appid, resource string, asserts AssertsMap) *Claim {
 	claim := &Claim{
-		AppID:    uuid.New().String(),
+		AppID:    appid,
 		Resource: resource,
 		Asserts:  make(AssertsMap, len(asserts)),
 	}
