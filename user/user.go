@@ -2,10 +2,10 @@ package user
 
 import (
 	"encoding/json"
+	"log"
+	"strings"
 
-	"../config"
 	"github.com/gomodule/redigo/redis"
-	"github.com/google/uuid"
 )
 
 type AssertsMap map[string]string
@@ -23,9 +23,11 @@ type User struct {
 	Claims   []Claim `json:"Claims"`
 }
 
-func New() *User {
+func New(id, email, pswd string) *User {
 	return &User{
-		ID: uuid.New().String(),
+		ID:       strings.TrimSpace(id),
+		Email:    strings.TrimSpace(email),
+		Password: strings.TrimSpace(pswd),
 	}
 }
 
@@ -41,41 +43,39 @@ func NewClaim(appid, resource string, asserts AssertsMap) *Claim {
 	return claim
 }
 
-func (u *User) Save() error {
-	c, err := redisConn()
-	if err != nil {
-		return err
-	}
+func (u *User) Save(pool *redis.Pool) error {
+	c := pool.Get()
 	defer c.Close()
 	//marshall user
 	userM, errM := json.Marshal(u)
 	if errM != nil {
 		return errM
 	}
-	c.Do("SET", u.ID, userM)
+	_, err := c.Do("SET", u.ID, userM)
 	if err != nil {
 		return err
 	}
-	err = u.EmailIndAppend()
+	err = u.EmailIndAppend(pool)
 	return err
 }
 
-func redisConn() (c redis.Conn, err error) {
-	c, err = redis.Dial("tcp", config.RedisDSN)
-	if err != nil {
-		return
+func GetByID(id string, pool *redis.Pool) (u User, err error) {
+	c := pool.Get()
+	defer c.Close()
+	repl, errG := redis.Bytes(c.Do("GET", id))
+	if errG != nil {
+		return u, errG
 	}
-	_, err = c.Do("SELECT", config.RedisDB)
-	return c, err
+	log.Println(string(repl))
+	//unmarshall user
+	errUM := json.Unmarshal(repl, &u)
+	return u, errUM
 }
 
-func (u *User) EmailIndAppend() error {
-	c, err := redisConn()
-	if err != nil {
-		return err
-	}
+func (u *User) EmailIndAppend(pool *redis.Pool) error {
+	c := pool.Get()
 	defer c.Close()
-	c.Do("HSET", "uidbyemail", u.Email, u.ID)
+	_, err := c.Do("HSET", "uidbyemail", u.Email, u.ID)
 	if err != nil {
 		return err
 	}

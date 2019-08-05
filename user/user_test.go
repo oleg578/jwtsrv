@@ -3,37 +3,35 @@ package user
 import (
 	"reflect"
 	"testing"
+	"time"
 
+	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
 )
 
-func TestNew(t *testing.T) {
-	tests := []struct {
-		name string
-		want *User
-	}{
-		{
-			"getnewUser",
-			&User{},
+func newPool(addr string, db int) *redis.Pool {
+	return &redis.Pool{
+		MaxIdle:     300,
+		IdleTimeout: 600 * time.Second,
+		Dial: func() (redis.Conn, error) {
+			c, err := redis.Dial("tcp", addr)
+			if err != nil {
+				return nil, err
+			}
+			if _, err := c.Do("SELECT", db); err != nil {
+				c.Close()
+				return nil, err
+			}
+			return c, nil
 		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := New()
-			if reflect.TypeOf(got).String() != "*user.User" {
-				t.Errorf("NewUser() create error %v", got)
-			}
-			if len(got.ID) == 0 {
-				t.Errorf("NewUser() = %v, set ID error", got)
-			}
-		})
 	}
 }
 
 func TestUser_Save(t *testing.T) {
-	newuser := New()
-	newuser.Email = "oleh@example.com"
-	newuser.Password = "oleh12345"
+	pool := newPool(":6379", 2)
+	defer pool.Close()
+	id := uuid.New().String()
+	newuser := New(id, "oleh@example.com", "oleh12345")
 	clm := Claim{}
 	clm.AppID = uuid.New().String()
 	clm.Resource = "accounts.example.com"
@@ -54,32 +52,8 @@ func TestUser_Save(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := tt.testuser
-			if err := u.Save(); (err != nil) != tt.wantErr {
+			if err := u.Save(pool); (err != nil) != tt.wantErr {
 				t.Errorf("User.Save() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func Test_redisConn(t *testing.T) {
-	tests := []struct {
-		name string
-	}{
-		{
-			"InitConnect",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c, err := redisConn()
-			if err != nil {
-				t.Errorf("redisConn() error = %v", err)
-				return
-			}
-			_, err = c.Do("PING")
-			if err != nil {
-				t.Errorf("redisConn() error = %v", err)
-				return
 			}
 		})
 	}
@@ -123,5 +97,60 @@ func TestNewClaim(t *testing.T) {
 				t.Errorf("NewClaim() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestNew(t *testing.T) {
+	id := uuid.New().String()
+	email := "oleh@example.com"
+	pswd := "oleh12345"
+	userT := &User{
+		ID:       id,
+		Email:    email,
+		Password: pswd,
+	}
+	type args struct {
+		id    string
+		email string
+		pswd  string
+	}
+	tests := []struct {
+		name string
+		args args
+		want *User
+	}{
+		{
+			"UserTest",
+			args{
+				id,
+				email,
+				pswd,
+			},
+			userT,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := New(tt.args.id, tt.args.email, tt.args.pswd); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("New() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func BenchmarkSave(b *testing.B) {
+	pool := newPool(":6379", 2)
+	defer pool.Close()
+	id := uuid.New().String()
+	newuser := New(id, "oleh@example.com", "oleh12345")
+	clm := Claim{}
+	clm.AppID = uuid.New().String()
+	clm.Resource = "accounts.example.com"
+	clm.Asserts = make(AssertsMap)
+	clm.Asserts["Account"] = "12345"
+	newuser.Claims = append(newuser.Claims, clm)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		newuser.Save(pool)
 	}
 }
