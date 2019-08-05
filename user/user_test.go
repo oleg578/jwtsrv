@@ -154,3 +154,53 @@ func BenchmarkSave(b *testing.B) {
 		newuser.Save(pool)
 	}
 }
+
+func TestGetByEmail(t *testing.T) {
+	pool := newPool(":6379", 2)
+	defer pool.Close()
+	user1Email := "oleg.nagornij@gmail.com"
+	user1Pswd := "corner578"
+	user1 := New("", user1Email, user1Pswd)
+	asserts := make(AssertsMap)
+	asserts["role"] = "admin"
+	asserts["account"] = "*"
+	claim := NewClaim(
+		uuid.New().String(),
+		"sales.bw-api.com",
+		asserts)
+	user1.Claims = append(user1.Claims, *claim)
+	type args struct {
+		email string
+		pool  *redis.Pool
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantU   User
+		wantErr bool
+	}{
+		{
+			"userGetByEmail",
+			args{
+				"oleg.nagornij@gmail.com",
+				pool,
+			},
+			*user1,
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotU, err := GetByEmail(tt.args.email, tt.args.pool)
+			tt.wantU.ID = gotU.ID
+			tt.wantU.Claims[0].AppID = gotU.Claims[0].AppID
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetByEmail() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotU, tt.wantU) {
+				t.Errorf("GetByEmail() = %v, want %v", gotU, tt.wantU)
+			}
+		})
+	}
+}

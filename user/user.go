@@ -81,3 +81,23 @@ func (u *User) EmailIndAppend(pool *redis.Pool) error {
 	}
 	return nil
 }
+
+//TODO:
+// get user by email
+
+func GetByEmail(email string, pool *redis.Pool) (u User, err error) {
+	c := pool.Get()
+	defer c.Close()
+	//get user id
+	eml, errhg := c.Do("HGET", "uidbyemail", email)
+	if errhg != nil {
+		return u, errhg
+	}
+	um, erre := redis.Bytes(c.Do("GET", eml))
+	if erre != nil {
+		return u, erre
+	}
+	//log.Println(string(um))
+	err = json.Unmarshal(um, &u)
+	return
+}
