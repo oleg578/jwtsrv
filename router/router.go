@@ -43,6 +43,8 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 
 //Authorize route
 // input POST JSON newuser
+// input params
+// email, passwd, uip (user ip)
 // return {"access_token":"abcd","refresh_token":"abcd"}
 func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	var (
@@ -56,6 +58,7 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		log.Println(err)
 	}
+	log.Printf("%+v", r.Form)
 	tm := time.Now()
 	texp := tm.Add(time.Minute * config.AccessDuration)
 	tref := tm.Add(time.Minute * config.RefreshDuration)

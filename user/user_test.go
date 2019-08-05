@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestNewUser(t *testing.T) {
+func TestNew(t *testing.T) {
 	tests := []struct {
 		name string
 		want *User
@@ -17,7 +17,7 @@ func TestNewUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewUser()
+			got := New()
 			if reflect.TypeOf(got).String() != "*user.User" {
 				t.Errorf("NewUser() create error %v", got)
 			}
@@ -29,13 +29,13 @@ func TestNewUser(t *testing.T) {
 }
 
 func TestUser_Save(t *testing.T) {
-	newuser := NewUser()
+	newuser := New()
 	newuser.Email = "oleh@example.com"
 	newuser.Password = "oleh12345"
 	clm := Claim{}
 	clm.Resource = "accounts.example.com"
-	clm.Assert = make(map[string]string)
-	clm.Assert["Account"] = "12345"
+	clm.Asserts = make(AssertsMap)
+	clm.Asserts["Account"] = "12345"
 	newuser.Claims = append(newuser.Claims, clm)
 	tests := []struct {
 		name     string
@@ -77,6 +77,27 @@ func Test_redisConn(t *testing.T) {
 			if err != nil {
 				t.Errorf("redisConn() error = %v", err)
 				return
+			}
+		})
+	}
+}
+
+func TestNewClaim(t *testing.T) {
+	type args struct {
+		resource string
+		asserts  AssertsMap
+	}
+	tests := []struct {
+		name string
+		args args
+		want *Claim
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewClaim(tt.args.resource, tt.args.asserts); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewClaim() = %v, want %v", got, tt.want)
 			}
 		})
 	}

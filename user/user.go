@@ -8,9 +8,12 @@ import (
 	"github.com/google/uuid"
 )
 
+type AssertsMap map[string]string
+
 type Claim struct {
-	Resource string            `json:"Resource"`
-	Assert   map[string]string `json:"Assert"`
+	AppID    string     `json:"AppID"`
+	Resource string     `json:"Resource"`
+	Asserts  AssertsMap `json:"Assert"`
 }
 
 type User struct {
@@ -20,10 +23,22 @@ type User struct {
 	Claims   []Claim `json:"Claims"`
 }
 
-func NewUser() *User {
+func New() *User {
 	return &User{
 		ID: uuid.New().String(),
 	}
+}
+
+func NewClaim(resource string, asserts AssertsMap) *Claim {
+	claim := &Claim{
+		AppID:    uuid.New().String(),
+		Resource: resource,
+		Asserts:  make(AssertsMap, len(asserts)),
+	}
+	for key, val := range asserts {
+		claim.Asserts[key] = val
+	}
+	return claim
 }
 
 func (u *User) Save() error {
