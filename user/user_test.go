@@ -37,7 +37,6 @@ func TestUser_Save(t *testing.T) {
 	asserts["account"] = "*"
 	claim := NewClaim(
 		uuid.New().String(),
-		"sales.bw-api.com",
 		asserts)
 	newuser.Claims = append(newuser.Claims, *claim)
 	tests := []struct {
@@ -69,9 +68,8 @@ func TestNewClaim(t *testing.T) {
 	asserts["account"] = "12846978"
 	asserts["another"] = "something"
 	clm := &Claim{
-		AppID:    newid,
-		Resource: rsc,
-		Asserts:  asserts,
+		AppID:   newid,
+		Asserts: asserts,
 	}
 	type args struct {
 		appid    string
@@ -95,7 +93,7 @@ func TestNewClaim(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewClaim(tt.args.appid, tt.args.resource, tt.args.asserts); !reflect.DeepEqual(got, tt.want) {
+			if got := NewClaim(tt.args.appid, tt.args.asserts); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewClaim() = %v, want %v", got, tt.want)
 			}
 		})
@@ -147,10 +145,7 @@ func BenchmarkSave(b *testing.B) {
 	asserts := make(AssertsMap)
 	asserts["role"] = "admin"
 	asserts["account"] = "*"
-	claim := NewClaim(
-		uuid.New().String(),
-		"sales.bw-api.com",
-		asserts)
+	claim := NewClaim(uuid.New().String(), asserts)
 	newuser.Claims = append(newuser.Claims, *claim)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -165,10 +160,7 @@ func TestGetByEmail(t *testing.T) {
 	asserts := make(AssertsMap)
 	asserts["role"] = "admin"
 	asserts["account"] = "*"
-	claim := NewClaim(
-		uuid.New().String(),
-		"sales.bw-api.com",
-		asserts)
+	claim := NewClaim(uuid.New().String(), asserts)
 	user1.Claims = append(user1.Claims, *claim)
 	type args struct {
 		email string

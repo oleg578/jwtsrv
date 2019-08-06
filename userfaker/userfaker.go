@@ -41,17 +41,14 @@ func main() {
 	asserts := make(user.AssertsMap)
 	asserts["role"] = "admin"
 	asserts["account"] = "*"
-	claim := user.NewClaim(
-		uuid.New().String(),
-		"sales.bw-api.com",
-		asserts)
+	claim := user.NewClaim(uuid.New().String(), asserts)
 	user1.Claims = append(user1.Claims, *claim)
-	if err := user1.Save(Pool); err != nil {
+	if err := user1.Save(); err != nil {
 		log.Fatalln("save error: ", err)
 	}
 	log.Printf("%+v", user1)
 	//os.Exit(0)
-	tuser, err := user.GetByID(user1ID, Pool)
+	tuser, err := user.GetByID(user1ID)
 	if err != nil {
 		log.Fatalln("get user error: ", err)
 	}

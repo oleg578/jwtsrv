@@ -12,9 +12,8 @@ import (
 type AssertsMap map[string]string
 
 type Claim struct {
-	AppID    string     `json:"AppID"`
-	Resource string     `json:"Resource"`
-	Asserts  AssertsMap `json:"Assert"`
+	AppID   string     `json:"AppID"`
+	Asserts AssertsMap `json:"Assert"`
 }
 
 type User struct {
@@ -32,11 +31,10 @@ func New(id, email, pswd string) *User {
 	}
 }
 
-func NewClaim(appid, resource string, asserts AssertsMap) *Claim {
+func NewClaim(appid string, asserts AssertsMap) *Claim {
 	claim := &Claim{
-		AppID:    appid,
-		Resource: resource,
-		Asserts:  make(AssertsMap, len(asserts)),
+		AppID:   appid,
+		Asserts: make(AssertsMap, len(asserts)),
 	}
 	for key, val := range asserts {
 		claim.Asserts[key] = val
@@ -86,9 +84,6 @@ func (u *User) EmailIndAppend(c redis.Conn) error {
 	}
 	return nil
 }
-
-//TODO:
-// get user by email
 
 func GetByEmail(email string) (u User, err error) {
 	c, errc := redis.Dial("tcp", config.RedisDSN)
