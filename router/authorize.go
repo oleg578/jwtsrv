@@ -30,29 +30,72 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		log.Println(err)
 	}
+	//get and test email
 	eml := r.Form.Get("email")
 	if len(eml) == 0 {
 		err := fmt.Errorf("wrong email")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
-
-	u, uerr := user.GetByEmail(eml)
-	if uerr != nil {
-		ResponseBuild(w, APIResp{Response: "", Error: uerr.Error()})
+	//get and test user IP
+	uip := r.Form.Get("uip")
+	if len(eml) == 0 {
+		err := fmt.Errorf("user ip determine error")
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
-	uip := r.Form.Get("uip")
+	//get and test appid
+	appid := r.Form.Get("appid")
+	if len(eml) == 0 {
+		err := fmt.Errorf("app ip error")
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		return
+	}
+	//payload build
+	payload, errpb := payloadBuild(appid, eml, uip)
+	if errpb != nil {
+		ResponseBuild(w, APIResp{Response: "", Error: errpb.Error()})
+		return
+	}
+	AccessToken, err := jwts.CreateTokenHS256(payload, config.SecretKey)
+	if err != nil {
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		return
+	}
+	//change expiration for refresh_token
+	tm := time.Now()
+	tref := tm.Add(time.Minute * config.RefreshDuration)
+	payload["exp"] = tref.Unix()
 
+	RefreshToken, errRef := jwts.CreateTokenHS256(payload, config.SecretKey)
+	if errRef != nil {
+		ResponseBuild(w, APIResp{Response: "", Error: errRef.Error()})
+		return
+	}
+	Resp.Response = struct {
+		AccessToken  string `json:"access_token"`
+		RefreshToken string `json:"refresh_token"`
+	}{
+		AccessToken.RawStr,
+		RefreshToken.RawStr,
+	}
+	ResponseBuild(w, Resp)
+}
+
+func payloadBuild(appid, eml, uip string) (payload map[string]interface{}, err error) {
+	payload = make(map[string]interface{})
+	//try get user
+	u, uerr := user.GetByEmail(eml)
+	if uerr != nil {
+		return payload, uerr
+	}
 	tm := time.Now()
 	texp := tm.Add(time.Minute * config.AccessDuration)
-	tref := tm.Add(time.Minute * config.RefreshDuration)
-	payload := make(map[string]interface{})
 	payload["uid"] = u.ID
 	payload["uip"] = uip
 	payload["exp"] = texp.Unix()
 	for _, c := range u.Claims {
-		if c.AppID == r.Form.Get("appid") {
+		if c.AppID == appid {
 			payload["clm"] = c
 		}
 	}
@@ -67,21 +110,5 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	payload["jti"] = jti.String()
-	AccessToken, err := jwts.CreateTokenHS256(payload, config.SecretKey)
-	if err != nil {
-		log.Println(err)
-	}
-	payload["exp"] = tref.Unix()
-	RefreshToken, errRef := jwts.CreateTokenHS256(payload, config.SecretKey)
-	if errRef != nil {
-		log.Println(errRef)
-	}
-	Resp.Response = struct {
-		AccessToken  string `json:"access_token"`
-		RefreshToken string `json:"refresh_token"`
-	}{
-		AccessToken.RawStr,
-		RefreshToken.RawStr,
-	}
-	ResponseBuild(w, Resp)
+	return
 }
