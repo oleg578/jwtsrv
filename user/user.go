@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
 
@@ -94,13 +95,17 @@ func GetByEmail(email string) (u User, err error) {
 	//get user id
 	eml, errhg := c.Do("HGET", "uidbyemail", email)
 	if errhg != nil {
-		return u, errhg
+		err = fmt.Errorf("user not found")
+		return u, err
 	}
 	um, erre := redis.Bytes(c.Do("GET", eml))
 	if erre != nil {
-		return u, erre
+		err = fmt.Errorf("user not found")
+		return u, err
 	}
-	//log.Println(string(um))
 	err = json.Unmarshal(um, &u)
+	if err != nil {
+		err = fmt.Errorf("user not found")
+	}
 	return
 }

@@ -2,7 +2,6 @@ package router
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -28,37 +27,52 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := r.ParseForm(); err != nil {
-		log.Println(err)
+		time.Sleep(time.Second * 5)
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		return
 	}
 	//get and test email
 	eml := r.Form.Get("email")
 	if len(eml) == 0 {
 		err := fmt.Errorf("wrong email")
+		time.Sleep(time.Second * 5)
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		return
+	}
+	//get and test password
+	pswd := r.Form.Get("passwd")
+	if len(pswd) == 0 {
+		err := fmt.Errorf("wrong password")
+		time.Sleep(time.Second * 5)
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
 	//get and test user IP
 	uip := r.Form.Get("uip")
-	if len(eml) == 0 {
-		err := fmt.Errorf("user ip determine error")
+	if len(uip) == 0 {
+		err := fmt.Errorf("user ip detection error")
+		time.Sleep(time.Second * 5)
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
 	//get and test appid
 	appid := r.Form.Get("appid")
-	if len(eml) == 0 {
+	if len(appid) == 0 {
 		err := fmt.Errorf("app ip error")
+		time.Sleep(time.Second * 5)
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
 	//payload build
-	payload, errpb := payloadBuild(appid, eml, uip)
+	payload, errpb := payloadBuild(appid, eml, pswd, uip)
 	if errpb != nil {
+		time.Sleep(time.Second * 5)
 		ResponseBuild(w, APIResp{Response: "", Error: errpb.Error()})
 		return
 	}
 	AccessToken, err := jwts.CreateTokenHS256(payload, config.SecretKey)
 	if err != nil {
+		time.Sleep(time.Second * 5)
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
@@ -82,12 +96,17 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	ResponseBuild(w, Resp)
 }
 
-func payloadBuild(appid, eml, uip string) (payload map[string]interface{}, err error) {
+func payloadBuild(appid, eml, pswd, uip string) (payload map[string]interface{}, err error) {
 	payload = make(map[string]interface{})
 	//try get user
 	u, uerr := user.GetByEmail(eml)
 	if uerr != nil {
 		return payload, uerr
+	}
+	//test user passwd
+	if u.Password != pswd {
+		err = fmt.Errorf("wrong password")
+		return
 	}
 	tm := time.Now()
 	texp := tm.Add(time.Minute * config.AccessDuration)
