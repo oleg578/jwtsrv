@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"../config"
-	_ "github.com/go-sql-driver/mysql" //mysql driver
+	"../user"
 	"github.com/google/uuid"
 	"github.com/oleg578/jwts"
 )
@@ -59,6 +59,14 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 	log.Printf("%+v", r.Form)
+	eml := r.Form.Get("email")
+	if len(eml) == 0 {
+		err := fmt.Errorf("wrong email")
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		return
+	}
+
+	user.GetByEmail(eml)
 	tm := time.Now()
 	texp := tm.Add(time.Minute * config.AccessDuration)
 	tref := tm.Add(time.Minute * config.RefreshDuration)

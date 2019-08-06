@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"../config"
 	"github.com/gomodule/redigo/redis"
 )
 
@@ -43,24 +44,30 @@ func NewClaim(appid, resource string, asserts AssertsMap) *Claim {
 	return claim
 }
 
-func (u *User) Save(pool *redis.Pool) error {
-	c := pool.Get()
+func (u *User) Save() error {
+	c, err := redis.Dial("tcp", config.RedisDSN)
+	if err != nil {
+		return err
+	}
 	defer c.Close()
 	//marshall user
 	userM, errM := json.Marshal(u)
 	if errM != nil {
 		return errM
 	}
-	_, err := c.Do("SET", u.ID, userM)
+	_, err = c.Do("SET", u.ID, userM)
 	if err != nil {
 		return err
 	}
-	err = u.EmailIndAppend(pool)
+	err = u.EmailIndAppend(c)
 	return err
 }
 
-func GetByID(id string, pool *redis.Pool) (u User, err error) {
-	c := pool.Get()
+func GetByID(id string) (u User, err error) {
+	c, errc := redis.Dial("tcp", config.RedisDSN)
+	if err != nil {
+		return u, errc
+	}
 	defer c.Close()
 	repl, errG := redis.Bytes(c.Do("GET", id))
 	if errG != nil {
@@ -72,9 +79,7 @@ func GetByID(id string, pool *redis.Pool) (u User, err error) {
 	return u, errUM
 }
 
-func (u *User) EmailIndAppend(pool *redis.Pool) error {
-	c := pool.Get()
-	defer c.Close()
+func (u *User) EmailIndAppend(c redis.Conn) error {
 	_, err := c.Do("HSET", "uidbyemail", u.Email, u.ID)
 	if err != nil {
 		return err
@@ -85,8 +90,11 @@ func (u *User) EmailIndAppend(pool *redis.Pool) error {
 //TODO:
 // get user by email
 
-func GetByEmail(email string, pool *redis.Pool) (u User, err error) {
-	c := pool.Get()
+func GetByEmail(email string) (u User, err error) {
+	c, errc := redis.Dial("tcp", config.RedisDSN)
+	if err != nil {
+		return u, errc
+	}
 	defer c.Close()
 	//get user id
 	eml, errhg := c.Do("HGET", "uidbyemail", email)

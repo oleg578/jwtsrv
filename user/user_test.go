@@ -28,16 +28,18 @@ func newPool(addr string, db int) *redis.Pool {
 }
 
 func TestUser_Save(t *testing.T) {
-	pool := newPool(":6379", 2)
-	defer pool.Close()
 	id := uuid.New().String()
-	newuser := New(id, "oleh@example.com", "oleh12345")
-	clm := Claim{}
-	clm.AppID = uuid.New().String()
-	clm.Resource = "accounts.example.com"
-	clm.Asserts = make(AssertsMap)
-	clm.Asserts["Account"] = "12345"
-	newuser.Claims = append(newuser.Claims, clm)
+	newuserEmail := "oleg.nagornij@gmail.com"
+	newuserPswd := "corner578"
+	newuser := New(id, newuserEmail, newuserPswd)
+	asserts := make(AssertsMap)
+	asserts["role"] = "admin"
+	asserts["account"] = "*"
+	claim := NewClaim(
+		uuid.New().String(),
+		"sales.bw-api.com",
+		asserts)
+	newuser.Claims = append(newuser.Claims, *claim)
 	tests := []struct {
 		name     string
 		testuser *User
@@ -52,7 +54,7 @@ func TestUser_Save(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := tt.testuser
-			if err := u.Save(pool); (err != nil) != tt.wantErr {
+			if err := u.Save(); (err != nil) != tt.wantErr {
 				t.Errorf("User.Save() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -102,8 +104,8 @@ func TestNewClaim(t *testing.T) {
 
 func TestNew(t *testing.T) {
 	id := uuid.New().String()
-	email := "oleh@example.com"
-	pswd := "oleh12345"
+	email := "oleg.nagornij@gmail.com"
+	pswd := "corner578"
 	userT := &User{
 		ID:       id,
 		Email:    email,
@@ -139,25 +141,24 @@ func TestNew(t *testing.T) {
 }
 
 func BenchmarkSave(b *testing.B) {
-	pool := newPool(":6379", 2)
-	defer pool.Close()
-	id := uuid.New().String()
-	newuser := New(id, "oleh@example.com", "oleh12345")
-	clm := Claim{}
-	clm.AppID = uuid.New().String()
-	clm.Resource = "accounts.example.com"
-	clm.Asserts = make(AssertsMap)
-	clm.Asserts["Account"] = "12345"
-	newuser.Claims = append(newuser.Claims, clm)
+	newuserEmail := "oleg.nagornij@gmail.com"
+	newuserPswd := "corner578"
+	newuser := New("", newuserEmail, newuserPswd)
+	asserts := make(AssertsMap)
+	asserts["role"] = "admin"
+	asserts["account"] = "*"
+	claim := NewClaim(
+		uuid.New().String(),
+		"sales.bw-api.com",
+		asserts)
+	newuser.Claims = append(newuser.Claims, *claim)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		newuser.Save(pool)
+		newuser.Save()
 	}
 }
 
 func TestGetByEmail(t *testing.T) {
-	pool := newPool(":6379", 2)
-	defer pool.Close()
 	user1Email := "oleg.nagornij@gmail.com"
 	user1Pswd := "corner578"
 	user1 := New("", user1Email, user1Pswd)
@@ -171,7 +172,6 @@ func TestGetByEmail(t *testing.T) {
 	user1.Claims = append(user1.Claims, *claim)
 	type args struct {
 		email string
-		pool  *redis.Pool
 	}
 	tests := []struct {
 		name    string
@@ -183,7 +183,6 @@ func TestGetByEmail(t *testing.T) {
 			"userGetByEmail",
 			args{
 				"oleg.nagornij@gmail.com",
-				pool,
 			},
 			*user1,
 			false,
@@ -191,7 +190,7 @@ func TestGetByEmail(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotU, err := GetByEmail(tt.args.email, tt.args.pool)
+			gotU, err := GetByEmail(tt.args.email)
 			tt.wantU.ID = gotU.ID
 			tt.wantU.Claims[0].AppID = gotU.Claims[0].AppID
 			if (err != nil) != tt.wantErr {
