@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"../config"
+	"../user"
 	"github.com/oleg578/jwts"
-	jwt "github.com/oleg578/jwts"
 )
 
 // Renew route
@@ -31,7 +31,7 @@ func RenewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	//get and test email
 	refreshToken := r.Form.Get("refresh_token")
-	rtok, err := jwt.Parse(refreshToken)
+	rtok, err := jwts.Parse(refreshToken)
 	if err != nil {
 		err := fmt.Errorf("token was not parsed")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
@@ -44,6 +44,14 @@ func RenewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//token valid - we can build new
+	//test user exists
+	//try get user
+	_, uerr := user.GetByID(rtok.Payload["uid"].(string))
+	if uerr != nil {
+		ResponseBuild(w, APIResp{Response: "", Error: uerr.Error()})
+		return
+	}
+	//build tokens
 	payload := rtok.Payload
 	tm := time.Now()
 	texp := tm.Add(time.Minute * config.AccessDuration)

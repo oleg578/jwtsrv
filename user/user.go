@@ -3,7 +3,6 @@ package user
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 
 	"../config"
@@ -70,11 +69,12 @@ func GetByID(id string) (u User, err error) {
 	defer c.Close()
 	repl, errG := redis.Bytes(c.Do("GET", id))
 	if errG != nil {
-		return u, errG
+		err = fmt.Errorf("user not found")
+		return u, err
 	}
-	log.Println(string(repl))
 	//unmarshall user
 	errUM := json.Unmarshal(repl, &u)
+
 	return u, errUM
 }
 
