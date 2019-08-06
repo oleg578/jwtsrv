@@ -12,6 +12,7 @@ import (
 func main() {
 	rootHdlr := http.HandlerFunc(router.IndexHandler)
 	authorizeHdlr := http.HandlerFunc(router.AuthorizeHandler)
+	renewHdlr := http.HandlerFunc(router.RenewHandler)
 	createHdlr := http.HandlerFunc(router.CreateHandler)
 	deleteHdlr := http.HandlerFunc(router.DeleteHandler)
 	searchHdlr := http.HandlerFunc(router.SearchHandler)
@@ -25,6 +26,9 @@ func main() {
 	//POST
 	//params apid, email, passwd
 	mux.Handle("/authorize", authorizeHdlr)
+	//POST
+	//params refresh_token
+	mux.Handle("/renew", renewHdlr)
 	//create route
 	//POST source is JSON user
 	mux.Handle("/create", createHdlr)

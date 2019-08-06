@@ -13,7 +13,7 @@ import (
 )
 
 //Authorize route
-// input POST JSON newuser
+// input POST
 // input params
 // email, passwd, uip (user ip)
 // return {"access_token":"abcd","refresh_token":"abcd"}
