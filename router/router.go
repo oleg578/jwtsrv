@@ -58,7 +58,6 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		log.Println(err)
 	}
-	log.Printf("%+v", r.Form)
 	eml := r.Form.Get("email")
 	if len(eml) == 0 {
 		err := fmt.Errorf("wrong email")
@@ -66,15 +65,25 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user.GetByEmail(eml)
+	u, uerr := user.GetByEmail(eml)
+	if uerr != nil {
+		ResponseBuild(w, APIResp{Response: "", Error: uerr.Error()})
+		return
+	}
+	uip := r.Form.Get("uip")
+
 	tm := time.Now()
 	texp := tm.Add(time.Minute * config.AccessDuration)
 	tref := tm.Add(time.Minute * config.RefreshDuration)
 	payload := make(map[string]interface{})
-	payload["uid"] = uuid.New().String()
-	payload["uip"] = r.RemoteAddr
-	payload["acc"] = 12018948
+	payload["uid"] = u.ID
+	payload["uip"] = uip
 	payload["exp"] = texp.Unix()
+	for _, c := range u.Claims {
+		if c.AppID == r.Form.Get("appid") {
+			payload["clm"] = c
+		}
+	}
 	sr := strings.NewReader(payload["uid"].(string) +
 		payload["uip"].(string) +
 		config.SecretKey)
