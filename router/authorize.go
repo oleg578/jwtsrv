@@ -92,6 +92,7 @@ func payloadBuild(appid, eml, uip string) (payload map[string]interface{}, err e
 	tm := time.Now()
 	texp := tm.Add(time.Minute * config.AccessDuration)
 	payload["uid"] = u.ID
+	payload["eml"] = u.Email
 	payload["uip"] = uip
 	payload["exp"] = texp.Unix()
 	for _, c := range u.Claims {
