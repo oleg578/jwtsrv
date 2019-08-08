@@ -1,6 +1,8 @@
 package config
 
 const (
+	MAXBODYLENGTH = 2048
+
 	//Host = "10.132.146.197"
 	Host = ""
 

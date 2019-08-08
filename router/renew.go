@@ -24,6 +24,12 @@ func RenewHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
+	//prevent maliciously sending
+	if r.ContentLength > config.MAXBODYLENGTH {
+		err := fmt.Errorf("request body length limit exceeded")
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		return
+	}
 	if err := r.ParseForm(); err != nil {
 		time.Sleep(time.Second * 5)
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
