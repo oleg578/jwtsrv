@@ -2,8 +2,6 @@ package router
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -28,69 +26,7 @@ func ResponseBuild(w http.ResponseWriter, resp APIResp) {
 // IndexHandler route
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	var Resp APIResp
-	log.Println(r.Header)
-	log.Println(r.RemoteAddr) //!!!
-	Resp.Response = "jwtsrv.com"
-	ResponseBuild(w, Resp)
-}
-
-// CreateHandler route
-func CreateHandler(w http.ResponseWriter, r *http.Request) {
-	const MAXBODYLENGTH = 1024
-	var (
-		Resp APIResp
-	)
-	if r.Method != "POST" {
-		err := fmt.Errorf("wrong request type")
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-		return
-	}
-	Resp.Response = "OK"
-	Resp.Error = ""
-	ResponseBuild(w, Resp)
-}
-
-// DeleteHandler route
-// input POST JSON newuser
-func DeleteHandler(w http.ResponseWriter, r *http.Request) {
-	var (
-		Resp APIResp
-	)
-	if r.Method != "POST" {
-		err := fmt.Errorf("wrong request type")
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-		return
-	}
-	Resp.Response = "Delete"
-	Resp.Error = ""
-	ResponseBuild(w, Resp)
-}
-
-// SearchHandler route
-func SearchHandler(w http.ResponseWriter, r *http.Request) {
-	var (
-		Resp APIResp
-	)
-	if r.Method != "GET" {
-		err := fmt.Errorf("wrong request type")
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-		return
-	}
-	Resp.Response = "SearchHandler"
-	ResponseBuild(w, Resp)
-}
-
-// ListHandler route
-func ListHandler(w http.ResponseWriter, r *http.Request) {
-	var (
-		Resp APIResp
-	)
-	if r.Method != "GET" {
-		err := fmt.Errorf("wrong request type")
-		ResponseBuild(w, APIResp{Response: "[]", Error: err.Error()})
-		return
-	}
-	Resp.Response = "[]"
+	Resp.Response = r.Host
 	ResponseBuild(w, Resp)
 }
 
@@ -100,11 +36,4 @@ func SetHeaders(w http.ResponseWriter) {
 	w.Header().Add("Access-Control-Allow-Headers", "Access-Control-Allow-Origin")
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Credentials", "true")
-}
-
-//NotFound route
-func NotFound(w http.ResponseWriter, r *http.Request) {
-	var Resp APIResp
-	Resp.Error = "Route not found"
-	ResponseBuild(w, Resp)
 }
