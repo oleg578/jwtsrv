@@ -2,6 +2,7 @@ package router
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -26,6 +27,7 @@ func ResponseBuild(w http.ResponseWriter, resp APIResp) {
 // IndexHandler route
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	var Resp APIResp
+	log.Println(r.Header)
 	Resp.Response = r.Host
 	ResponseBuild(w, Resp)
 }

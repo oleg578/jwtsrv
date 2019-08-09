@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	appreg "../appregister"
 	"../config"
 	"../user"
 	"github.com/oleg578/jwts"
@@ -19,6 +20,14 @@ func RenewHandler(w http.ResponseWriter, r *http.Request) {
 	var (
 		Resp APIResp
 	)
+	//test appid in white list from header Bw-Appid
+	appid := r.Header.Get("Bw-Appid")
+	_, errRsc := appreg.GetByID(appid)
+	if errRsc != nil {
+		err := fmt.Errorf("wrong application resource")
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		return
+	}
 	if r.Method != "POST" {
 		err := fmt.Errorf("wrong request type")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
@@ -62,7 +71,7 @@ func RenewHandler(w http.ResponseWriter, r *http.Request) {
 	tm := time.Now()
 	texp := tm.Add(time.Minute * config.AccessDuration)
 	tref := tm.Add(time.Minute * config.RefreshDuration)
-
+	//TODO: test appid in white list
 	payload["exp"] = texp.Unix()
 	AccessToken, err := jwts.CreateTokenHS256(payload, config.SecretKey)
 	if err != nil {

@@ -1,0 +1,11 @@
+This server will test header Bw-Appid
+
+example
+curl -i -H "Bw-Appid: a379ed35-a8e0-48c1-bfce-dc5eed92239c" http://localhost:5000/
+
+
+test valid request for exists application id in white list
+
+get from redis pair appid->host (hashes : "appwhitelist")
+
+after get we test host with host (or IP ?)

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	appreg "../appregister"
 	"../config"
 	"../user"
 	"github.com/google/uuid"
@@ -21,6 +22,14 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	var (
 		Resp APIResp
 	)
+	//test appid in white list from header Bw-Appid
+	appid := r.Header.Get("Bw-Appid")
+	_, errRsc := appreg.GetByID(appid)
+	if errRsc != nil {
+		err := fmt.Errorf("wrong application resource")
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		return
+	}
 	if r.Method != "POST" {
 		err := fmt.Errorf("wrong request type")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
@@ -61,14 +70,7 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
-	//get and test appid
-	appid := r.Form.Get("appid")
-	if len(appid) == 0 {
-		err := fmt.Errorf("app ip error")
-		time.Sleep(time.Second * 5)
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-		return
-	}
+
 	//payload build
 	payload, errpb := payloadBuild(appid, eml, pswd, uip)
 	if errpb != nil {

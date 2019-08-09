@@ -73,9 +73,9 @@ func GetByID(id string) (u User, err error) {
 		return u, err
 	}
 	//unmarshall user
-	errUM := json.Unmarshal(repl, &u)
+	err = json.Unmarshal(repl, &u)
 
-	return u, errUM
+	return
 }
 
 func (u *User) EmailIndAppend(c redis.Conn) error {
