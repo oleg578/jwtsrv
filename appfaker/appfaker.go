@@ -26,5 +26,15 @@ func main() {
 	if _, err := c.Do("HSET", "appregister", app.ID, appS); err != nil {
 		log.Fatalln(err)
 	}
-
+	appt := appreg.App{}
+	apr, err := redis.Bytes(c.Do("HGET", "appregister", app.ID))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.Printf(string(apr))
+	if errUm := json.Unmarshal(apr, &appt); errUm != nil {
+		log.Fatalln(errUm)
+	}
+	log.Println(appt)
+	log.Println(appt.SecretKey, len(appt.SecretKey))
 }
