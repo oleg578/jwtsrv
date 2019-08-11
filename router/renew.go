@@ -22,7 +22,12 @@ func RenewHandler(w http.ResponseWriter, r *http.Request) {
 	)
 	//test appid in white list from header Bw-Appid
 	appid := r.Header.Get("Bw-Appid")
-	_, errRsc := appreg.GetByID(appid)
+	if len(appid) == 0 {
+		err := fmt.Errorf("wrong application resource")
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		return
+	}
+	app, errRsc := appreg.GetByID(appid)
 	if errRsc != nil {
 		err := fmt.Errorf("wrong application resource")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
@@ -52,7 +57,7 @@ func RenewHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
-	errV := rtok.Validate(config.SecretKey)
+	errV := rtok.Validate(app.SecretKey)
 	if errV != nil {
 		err := fmt.Errorf("token is not valid")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
@@ -71,16 +76,15 @@ func RenewHandler(w http.ResponseWriter, r *http.Request) {
 	tm := time.Now()
 	texp := tm.Add(time.Minute * config.AccessDuration)
 	tref := tm.Add(time.Minute * config.RefreshDuration)
-	//TODO: test appid in white list
 	payload["exp"] = texp.Unix()
-	AccessToken, err := jwts.CreateTokenHS256(payload, config.SecretKey)
+	AccessToken, err := jwts.CreateTokenHS256(payload, app.SecretKey)
 	if err != nil {
 		time.Sleep(time.Second * 5)
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
 	payload["exp"] = tref.Unix()
-	RefreshToken, errRef := jwts.CreateTokenHS256(payload, config.SecretKey)
+	RefreshToken, errRef := jwts.CreateTokenHS256(payload, app.SecretKey)
 	if errRef != nil {
 		ResponseBuild(w, APIResp{Response: "", Error: errRef.Error()})
 		return

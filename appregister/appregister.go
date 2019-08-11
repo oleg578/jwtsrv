@@ -8,14 +8,15 @@ import (
 )
 
 type App struct {
-	ID       string `json:"ID"`
-	Resource string `json:"Resource"`
+	ID        string `json:"ID"`
+	Resource  string `json:"Resource"`
+	SecretKey string `json:"SecretKey"`
 }
 
 func GetByID(id string) (app App, err error) {
 	app.ID = id
 	c, errc := redis.Dial("tcp", config.RedisDSN)
-	if err != nil {
+	if errc != nil {
 		return app, errc
 	}
 	defer c.Close()

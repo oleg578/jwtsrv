@@ -24,7 +24,12 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	)
 	//test appid in white list from header Bw-Appid
 	appid := r.Header.Get("Bw-Appid")
-	_, errRsc := appreg.GetByID(appid)
+	if len(appid) == 0 {
+		err := fmt.Errorf("wrong application resource")
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		return
+	}
+	app, errRsc := appreg.GetByID(appid)
 	if errRsc != nil {
 		err := fmt.Errorf("wrong application resource")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
@@ -72,13 +77,13 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//payload build
-	payload, errpb := payloadBuild(appid, eml, pswd, uip)
+	payload, errpb := payloadBuild(app, eml, pswd, uip)
 	if errpb != nil {
 		time.Sleep(time.Second * 5)
 		ResponseBuild(w, APIResp{Response: "", Error: errpb.Error()})
 		return
 	}
-	AccessToken, err := jwts.CreateTokenHS256(payload, config.SecretKey)
+	AccessToken, err := jwts.CreateTokenHS256(payload, app.SecretKey)
 	if err != nil {
 		time.Sleep(time.Second * 5)
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
@@ -89,7 +94,7 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	tref := tm.Add(time.Minute * config.RefreshDuration)
 	payload["exp"] = tref.Unix()
 
-	RefreshToken, errRef := jwts.CreateTokenHS256(payload, config.SecretKey)
+	RefreshToken, errRef := jwts.CreateTokenHS256(payload, app.SecretKey)
 	if errRef != nil {
 		ResponseBuild(w, APIResp{Response: "", Error: errRef.Error()})
 		return
@@ -104,7 +109,7 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	ResponseBuild(w, Resp)
 }
 
-func payloadBuild(appid, eml, pswd, uip string) (payload map[string]interface{}, err error) {
+func payloadBuild(app appreg.App, eml, pswd, uip string) (payload map[string]interface{}, err error) {
 	payload = make(map[string]interface{})
 	//try get user
 	u, uerr := user.GetByEmail(eml)
@@ -123,13 +128,13 @@ func payloadBuild(appid, eml, pswd, uip string) (payload map[string]interface{},
 	payload["uip"] = uip
 	payload["exp"] = texp.Unix()
 	for _, c := range u.Claims {
-		if c.AppID == appid {
+		if c.AppID == app.ID {
 			payload["clm"] = c
 		}
 	}
 	sr := strings.NewReader(payload["uid"].(string) +
 		payload["uip"].(string) +
-		config.SecretKey)
+		app.SecretKey)
 	jti, errjti := uuid.NewRandomFromReader(sr)
 	if errjti != nil {
 		jti, errjti = uuid.NewRandom()
