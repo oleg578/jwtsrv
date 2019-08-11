@@ -1,6 +1,7 @@
 package appregister
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"../config"
@@ -20,11 +21,11 @@ func GetByID(id string) (app App, err error) {
 		return app, errc
 	}
 	defer c.Close()
-	rsc, errG := redis.String(c.Do("HGET", "appregister", id))
+	rsc, errG := redis.Bytes(c.Do("HGET", "appregister", id))
 	if errG != nil {
 		err = fmt.Errorf("app not found")
 		return app, err
 	}
-	app.Resource = rsc
+	err = json.Unmarshal(rsc, &app)
 	return
 }
