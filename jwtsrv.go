@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"./config"
-	"./router"
+	"github.com/oleg578/jwtsrv/config"
+	"github.com/oleg578/jwtsrv/router"
 )
 
 func main() {

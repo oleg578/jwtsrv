@@ -4,9 +4,9 @@ import (
 	"log"
 	"time"
 
-	"../user"
 	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
+	"github.com/oleg578/jwtsrv/user"
 )
 
 var (

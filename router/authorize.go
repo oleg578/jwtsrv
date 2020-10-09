@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	appreg "../appregister"
-	"../config"
-	"../user"
 	"github.com/google/uuid"
 	"github.com/oleg578/jwts"
+	appreg "github.com/oleg578/jwtsrv/appregister"
+	"github.com/oleg578/jwtsrv/config"
+	"github.com/oleg578/jwtsrv/user"
 )
 
 //Authorize route

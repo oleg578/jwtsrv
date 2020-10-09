@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"time"
 
-	appreg "../appregister"
-	"../config"
-	"../user"
 	"github.com/oleg578/jwts"
+	appreg "github.com/oleg578/jwtsrv/appregister"
+	"github.com/oleg578/jwtsrv/config"
+	"github.com/oleg578/jwtsrv/user"
 )
 
 // Renew route

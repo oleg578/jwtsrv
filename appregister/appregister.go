@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"../config"
 	"github.com/gomodule/redigo/redis"
+	"github.com/oleg578/jwtsrv/config"
 )
 
 type App struct {

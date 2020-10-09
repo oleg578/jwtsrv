@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"../config"
 	"github.com/gomodule/redigo/redis"
+	"github.com/oleg578/jwtsrv/config"
 )
 
 type AssertsMap map[string]string

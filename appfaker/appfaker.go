@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"log"
 
-	appreg "../appregister"
 	"github.com/gomodule/redigo/redis"
+	appreg "github.com/oleg578/jwtsrv/appregister"
 )
 
 func main() {
