@@ -47,7 +47,6 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := r.ParseForm(); err != nil {
-		time.Sleep(time.Second * 5)
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
@@ -55,7 +54,6 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	eml := r.Form.Get("email")
 	if len(eml) == 0 {
 		err := fmt.Errorf("wrong email")
-		time.Sleep(time.Second * 5)
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
@@ -63,7 +61,6 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	pswd := r.Form.Get("passwd")
 	if len(pswd) == 0 {
 		err := fmt.Errorf("wrong password")
-		time.Sleep(time.Second * 5)
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
@@ -71,7 +68,6 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	uip := r.Form.Get("uip")
 	if len(uip) == 0 {
 		err := fmt.Errorf("user ip detection error")
-		time.Sleep(time.Second * 5)
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
@@ -79,13 +75,11 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	//payload build
 	payload, errpb := payloadBuild(app, eml, pswd, uip)
 	if errpb != nil {
-		time.Sleep(time.Second * 5)
 		ResponseBuild(w, APIResp{Response: "", Error: errpb.Error()})
 		return
 	}
 	AccessToken, err := jwts.CreateTokenHS256(payload, app.SecretKey)
 	if err != nil {
-		time.Sleep(time.Second * 5)
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}

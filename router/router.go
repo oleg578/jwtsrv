@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 )
 
 // APIResp response struct
@@ -14,6 +15,9 @@ type APIResp struct {
 
 //ResponseBuild response build and send
 func ResponseBuild(w http.ResponseWriter, resp APIResp) {
+	if len(resp.Error) > 0 {
+		time.Sleep(time.Second * 5)
+	}
 	b, err := json.Marshal(resp)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
