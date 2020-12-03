@@ -22,6 +22,11 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	var (
 		Resp APIResp
 	)
+	if r.Method != "POST" {
+		err := fmt.Errorf("wrong request type")
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		return
+	}
 	//test appid in white list from header Bw-Appid
 	appid := r.Header.Get("Bw-Appid")
 	if len(appid) == 0 {
@@ -32,11 +37,6 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	app, errRsc := appreg.GetByID(appid)
 	if errRsc != nil {
 		err := fmt.Errorf("wrong application resource")
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-		return
-	}
-	if r.Method != "POST" {
-		err := fmt.Errorf("wrong request type")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}

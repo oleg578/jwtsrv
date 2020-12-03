@@ -3,7 +3,6 @@ package appregister
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/gomodule/redigo/redis"
 	"github.com/oleg578/jwtsrv/config"
 )

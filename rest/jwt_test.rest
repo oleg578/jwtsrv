@@ -4,7 +4,7 @@ POST http://localhost:5000/authorize HTTP/1.1
 Bw-Appid: a379ed35-a8e0-48c1-bfce-dc5eed92239c
 content-type: application/x-www-form-urlencoded
 
-email=oleg.nagornij@gmail.com&passwd=corner578&uip=192.168.1.121
+email=oleg.nagornij@gmail.com&passwd=corner578&uip=192.168.1.175
 
 ###wrong appid
 POST http://localhost:5000/authorize HTTP/1.1
