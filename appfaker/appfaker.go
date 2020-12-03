@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	c, errc := redis.Dial("tcp", "192.168.1.121:6379")
+	c, errc := redis.Dial("tcp", "192.168.1.20:6379")
 	if errc != nil {
 		log.Fatalln(errc)
 	}
