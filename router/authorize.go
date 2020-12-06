@@ -22,12 +22,20 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	var (
 		Resp APIResp
 	)
+	//test method
 	if r.Method != "POST" {
 		err := fmt.Errorf("wrong request type")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
+	//prevent maliciously sending
+	if r.ContentLength > config.MAXBODYLENGTH {
+		err := fmt.Errorf("request body length limit exceeded")
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		return
+	}
 	//test appid in white list from header Bw-Appid
+	//TODO: test header app-id ?
 	appid := r.Header.Get("Bw-Appid")
 	if len(appid) == 0 {
 		err := fmt.Errorf("wrong application resource")
@@ -37,12 +45,6 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	app, errRsc := appreg.GetByID(appid)
 	if errRsc != nil {
 		err := fmt.Errorf("wrong application resource")
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-		return
-	}
-	//prevent maliciously sending
-	if r.ContentLength > config.MAXBODYLENGTH {
-		err := fmt.Errorf("request body length limit exceeded")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
