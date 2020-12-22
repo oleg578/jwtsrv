@@ -23,7 +23,7 @@ func newPool(addr string) *redis.Pool {
 				return nil, err
 			}
 			if _, err := c.Do("SELECT", 2); err != nil {
-				c.Close()
+				_ = c.Close()
 				return nil, err
 			}
 			return c, nil
@@ -33,7 +33,7 @@ func newPool(addr string) *redis.Pool {
 
 func main() {
 	Pool = newPool(":6379")
-	defer Pool.Close()
+	defer func() { _ = Pool.Close() }()
 	user1ID := uuid.New().String()
 	user1Email := "oleg.nagornij@gmail.com"
 	user1Pswd := "corner578"
@@ -48,9 +48,9 @@ func main() {
 	}
 	log.Printf("%+v", user1)
 	//os.Exit(0)
-	tuser, err := user.GetByID(user1ID)
+	tUser, err := user.GetByID(user1ID)
 	if err != nil {
 		log.Fatalln("get user error: ", err)
 	}
-	log.Printf("%+v\n", tuser)
+	log.Printf("%+v\n", tUser)
 }

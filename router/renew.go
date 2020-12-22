@@ -51,13 +51,13 @@ func RenewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	//get and test email
 	refreshToken := r.Form.Get("refresh_token")
-	rtok, err := jwts.Parse(refreshToken)
+	refTok, err := jwts.Parse(refreshToken)
 	if err != nil {
 		err := fmt.Errorf("token was not parsed")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
-	errV := rtok.Validate(app.SecretKey)
+	errV := refTok.Validate(app.SecretKey)
 	if errV != nil {
 		err := fmt.Errorf("token is not valid")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
@@ -66,13 +66,13 @@ func RenewHandler(w http.ResponseWriter, r *http.Request) {
 	//token valid - we can build new
 	//test user exists
 	//try get user
-	_, uerr := user.GetByID(rtok.Payload["uid"].(string))
-	if uerr != nil {
-		ResponseBuild(w, APIResp{Response: "", Error: uerr.Error()})
+	_, errUser := user.GetByID(refTok.Payload["uid"].(string))
+	if errUser != nil {
+		ResponseBuild(w, APIResp{Response: "", Error: errUser.Error()})
 		return
 	}
 	//build tokens
-	payload := rtok.Payload
+	payload := refTok.Payload
 	tm := time.Now()
 	texp := tm.Add(time.Minute * config.AccessDuration)
 	tref := tm.Add(time.Minute * config.RefreshDuration)

@@ -9,11 +9,11 @@ import (
 )
 
 func main() {
-	c, errc := redis.Dial("tcp", "192.168.1.20:6379")
-	if errc != nil {
-		log.Fatalln(errc)
+	c, errC := redis.Dial("tcp", "192.168.1.20:6379")
+	if errC != nil {
+		log.Fatalln(errC)
 	}
-	defer c.Close()
+	defer func() { _ = c.Close() }()
 	app := appreg.App{
 		ID:        "a379ed35-a8e0-48c1-bfce-dc5eed92239c",
 		Resource:  "localhost",
@@ -23,7 +23,8 @@ func main() {
 	if errM != nil {
 		log.Fatalln(errM)
 	}
-	if _, err := c.Do("HSET", "appregister", app.ID, appS); err != nil {
+	if _, err := c.Do("HSET",
+		"appregister", app.ID, appS); err != nil {
 		log.Fatalln(err)
 	}
 	appt := appreg.App{}

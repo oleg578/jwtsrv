@@ -24,7 +24,7 @@ func ResponseBuild(w http.ResponseWriter, resp APIResp) {
 		return
 	}
 	SetHeaders(w)
-	w.Write(b)
+	_, _ = w.Write(b)
 	return
 }
 

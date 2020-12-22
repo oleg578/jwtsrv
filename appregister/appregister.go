@@ -15,12 +15,12 @@ type App struct {
 
 func GetByID(id string) (app App, err error) {
 	app.ID = id
-	c, errc := redis.Dial("tcp", config.RedisDSN)
-	if errc != nil {
-		return app, errc
+	con, errCon := redis.Dial("tcp", config.RedisDSN)
+	if errCon != nil {
+		return app, errCon
 	}
-	defer c.Close()
-	rsc, errG := redis.Bytes(c.Do("HGET", "appregister", id))
+	defer func() { _ = con.Close() }()
+	rsc, errG := redis.Bytes(con.Do("HGET", "appregister", id))
 	if errG != nil {
 		err = fmt.Errorf("app not found")
 		return app, err

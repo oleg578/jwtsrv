@@ -10,21 +10,21 @@ import (
 )
 
 func main() {
-	rootHdlr := http.HandlerFunc(router.IndexHandler)
-	authorizeHdlr := http.HandlerFunc(router.AuthorizeHandler)
-	renewHdlr := http.HandlerFunc(router.RenewHandler)
+	rootHandler := http.HandlerFunc(router.IndexHandler)
+	authorizeHandler := http.HandlerFunc(router.AuthorizeHandler)
+	renewHandler := http.HandlerFunc(router.RenewHandler)
 
 	mux := http.NewServeMux()
 	// routes
 	//index route
 	//GET
-	mux.Handle("/", rootHdlr)
+	mux.Handle("/", rootHandler)
 	//POST
 	//params apid, email, passwd
-	mux.Handle("/authorize", authorizeHdlr)
+	mux.Handle("/authorize", authorizeHandler)
 	//POST
 	//params refresh_token
-	mux.Handle("/renew", renewHdlr)
+	mux.Handle("/renew", renewHandler)
 
 	//server
 	//for cluster

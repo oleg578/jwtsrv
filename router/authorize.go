@@ -34,9 +34,8 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
-	//test appid in white list from header Bw-Appid
-	//TODO: test header app-id ?
-	appid := r.Header.Get("Bw-Appid")
+	//test application id in white list from header X-AppID
+	appid := r.Header.Get("X-AppID")
 	if len(appid) == 0 {
 		err := fmt.Errorf("wrong application resource")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
@@ -75,9 +74,9 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//payload build
-	payload, errpb := payloadBuild(app, eml, pswd, uip)
-	if errpb != nil {
-		ResponseBuild(w, APIResp{Response: "", Error: errpb.Error()})
+	payload, errPb := payloadBuild(app, eml, pswd, uip)
+	if errPb != nil {
+		ResponseBuild(w, APIResp{Response: "", Error: errPb.Error()})
 		return
 	}
 	AccessToken, err := jwts.CreateTokenHS256(payload, app.SecretKey)
@@ -108,9 +107,9 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 func payloadBuild(app appreg.App, eml, pswd, uip string) (payload map[string]interface{}, err error) {
 	payload = make(map[string]interface{})
 	//try get user
-	u, uerr := user.GetByEmail(eml)
-	if uerr != nil {
-		return payload, uerr
+	u, errUser := user.GetByEmail(eml)
+	if errUser != nil {
+		return payload, errUser
 	}
 	//test user passwd
 	if u.Password != pswd {
@@ -131,10 +130,10 @@ func payloadBuild(app appreg.App, eml, pswd, uip string) (payload map[string]int
 	sr := strings.NewReader(payload["uid"].(string) +
 		payload["uip"].(string) +
 		app.SecretKey)
-	jti, errjti := uuid.NewRandomFromReader(sr)
-	if errjti != nil {
-		jti, errjti = uuid.NewRandom()
-		if errjti != nil {
+	jti, errJti := uuid.NewRandomFromReader(sr)
+	if errJti != nil {
+		jti, errJti = uuid.NewRandom()
+		if errJti != nil {
 			jti = uuid.New()
 		}
 	}

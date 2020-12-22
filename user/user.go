@@ -47,7 +47,7 @@ func (u *User) Save() error {
 	if err != nil {
 		return err
 	}
-	defer c.Close()
+	defer func() { _ = c.Close() }()
 	//marshall user
 	userM, errM := json.Marshal(u)
 	if errM != nil {
@@ -62,14 +62,14 @@ func (u *User) Save() error {
 }
 
 func GetByID(id string) (u User, err error) {
-	c, errc := redis.Dial("tcp", config.RedisDSN)
-	if err != nil {
-		return u, errc
+	con, errCon := redis.Dial("tcp", config.RedisDSN)
+	if errCon != nil {
+		return u, errCon
 	}
-	defer c.Close()
-	repl, errG := redis.Bytes(c.Do("GET", id))
+	defer func() { _ = con.Close() }()
+	repl, errG := redis.Bytes(con.Do("GET", id))
 	if errG != nil {
-		err = fmt.Errorf("user not found")
+		err = fmt.Errorf("user not found: %s", errG.Error())
 		return u, err
 	}
 	//unmarshall user
@@ -87,25 +87,25 @@ func (u *User) EmailIndAppend(c redis.Conn) error {
 }
 
 func GetByEmail(email string) (u User, err error) {
-	c, errc := redis.Dial("tcp", config.RedisDSN)
-	if err != nil {
-		return u, errc
+	c, errCon := redis.Dial("tcp", config.RedisDSN)
+	if errCon != nil {
+		return u, errCon
 	}
-	defer c.Close()
+	defer func() { _ = c.Close() }()
 	//get user id
-	eml, errhg := c.Do("HGET", "uidbyemail", email)
-	if errhg != nil {
-		err = fmt.Errorf("user not found")
+	eml, errHg := c.Do("HGET", "uidbyemail", email)
+	if errHg != nil {
+		err = fmt.Errorf("user not found: %s", errHg.Error())
 		return u, err
 	}
-	um, erre := redis.Bytes(c.Do("GET", eml))
-	if erre != nil {
-		err = fmt.Errorf("user not found")
+	um, errE := redis.Bytes(c.Do("GET", eml))
+	if errE != nil {
+		err = fmt.Errorf("user not found: %s", errE.Error())
 		return u, err
 	}
-	err = json.Unmarshal(um, &u)
-	if err != nil {
-		err = fmt.Errorf("user not found")
+	errUnm := json.Unmarshal(um, &u)
+	if errUnm != nil {
+		err = fmt.Errorf("user not found: %s", errUnm.Error())
 	}
 	return
 }
