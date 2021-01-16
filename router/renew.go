@@ -25,14 +25,14 @@ func RenewHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
-	//test appid in white list from header Bw-Appid
-	appid := r.Header.Get("Bw-Appid")
-	if len(appid) == 0 {
+	//test appId in white list from header Bw-Appid
+	appId := r.Header.Get("Bw-Appid")
+	if len(appId) == 0 {
 		err := fmt.Errorf("wrong application resource")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
-	app, errRsc := appreg.GetByID(appid)
+	app, errRsc := appreg.GetByID(appId)
 	if errRsc != nil {
 		err := fmt.Errorf("wrong application resource")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})

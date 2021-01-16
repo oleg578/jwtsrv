@@ -16,7 +16,7 @@ import (
 //Authorize route
 // input POST
 // input params
-// email, passwd, uip (user ip)
+// email, passwd
 // return {"access_token":"abcd","refresh_token":"abcd"}
 func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	var (
@@ -35,13 +35,13 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//test application id in white list from header X-AppID
-	appid := r.Header.Get("X-AppID")
-	if len(appid) == 0 {
+	appId := r.Header.Get("X-AppID")
+	if len(appId) == 0 {
 		err := fmt.Errorf("wrong application resource")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
-	app, errRsc := appreg.GetByID(appid)
+	app, errRsc := appreg.GetByID(appId)
 	if errRsc != nil {
 		err := fmt.Errorf("wrong application resource")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
@@ -65,16 +65,8 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
-	//get and test user IP
-	uip := r.Form.Get("uip")
-	if len(uip) == 0 {
-		err := fmt.Errorf("user ip detection error")
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-		return
-	}
-
 	//payload build
-	payload, errPb := payloadBuild(app, eml, pswd, uip)
+	payload, errPb := payloadBuild(app, eml, pswd)
 	if errPb != nil {
 		ResponseBuild(w, APIResp{Response: "", Error: errPb.Error()})
 		return
@@ -104,7 +96,7 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	ResponseBuild(w, Resp)
 }
 
-func payloadBuild(app appreg.App, eml, pswd, uip string) (payload map[string]interface{}, err error) {
+func payloadBuild(app appreg.App, eml, pswd string) (payload map[string]interface{}, err error) {
 	payload = make(map[string]interface{})
 	//try get user
 	u, errUser := user.GetByEmail(eml)
@@ -120,7 +112,6 @@ func payloadBuild(app appreg.App, eml, pswd, uip string) (payload map[string]int
 	texp := tm.Add(time.Minute * config.AccessDuration)
 	payload["uid"] = u.ID
 	payload["eml"] = u.Email
-	payload["uip"] = uip
 	payload["exp"] = texp.Unix()
 	for _, c := range u.Claims {
 		if c.AppID == app.ID {
@@ -128,7 +119,6 @@ func payloadBuild(app appreg.App, eml, pswd, uip string) (payload map[string]int
 		}
 	}
 	sr := strings.NewReader(payload["uid"].(string) +
-		payload["uip"].(string) +
 		app.SecretKey)
 	jti, errJti := uuid.NewRandomFromReader(sr)
 	if errJti != nil {
