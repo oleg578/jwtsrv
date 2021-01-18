@@ -1,29 +1,36 @@
 package main
 
 import (
+	"github.com/oleg578/jwtsrv/config"
+	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/oleg578/jwtsrv/router"
 )
 
 func main() {
+
 	rootHandler := http.HandlerFunc(router.IndexHandler)
 	authorizeHandler := http.HandlerFunc(router.AuthorizeHandler)
 	renewHandler := http.HandlerFunc(router.RenewHandler)
+	loginHandler := http.HandlerFunc(router.LoginHandler)
 
 	mux := http.NewServeMux()
 	// routes
 	//index route
 	//GET
-	mux.Handle("/", rootHandler)
+	mux.Handle("/", router.AppCheckMiddleware(rootHandler))
+	//GET
+	mux.Handle("/login", router.AppCheckMiddleware(loginHandler))
 	//POST
 	//params apid, email, passwd
-	mux.Handle("/authorize", authorizeHandler)
+	mux.Handle("/authorize", router.AppCheckMiddleware(authorizeHandler))
 	//POST
 	//params refresh_token
-	mux.Handle("/renew", renewHandler)
+	mux.Handle("/renew", router.AppCheckMiddleware(renewHandler))
 
 	//server
 	//certManager
@@ -50,4 +57,12 @@ func main() {
 	//log.Fatal(srv.ListenAndServeTLS("", ""))
 	//local debug
 	log.Fatal(srv.ListenAndServe())
+}
+
+func init() {
+	if err := os.Chdir(config.TemplateDir); err != nil {
+		log.Fatal(err)
+	}
+
+	router.TmplPool = template.Must(template.ParseGlob(`*.html`))
 }
