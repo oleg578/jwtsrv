@@ -56,7 +56,6 @@ func SetHeaders(w http.ResponseWriter) {
 func AppCheckMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		appId := r.Header.Get("X-AppID")
-		appId = "a379ed35-a8e0-48c1-bfce-dc5eed92239c"
 		if len(appId) == 0 {
 			err := fmt.Errorf("wrong application")
 			ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
@@ -67,7 +66,8 @@ func AppCheckMiddleware(next http.Handler) http.Handler {
 			ResponseBuild(w, APIResp{Response: "", Error: errRsc.Error()})
 			return
 		}
-		log.Println(r.Host)
+		log.Println(r.URL)
+		log.Println(r.Header)
 		if app.Resource != r.Host {
 
 		}
