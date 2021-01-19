@@ -9,14 +9,14 @@ import (
 )
 
 func main() {
-	c, errC := redis.Dial("tcp", "192.168.1.20:6379")
+	c, errC := redis.Dial("tcp", ":6379")
 	if errC != nil {
 		log.Fatalln(errC)
 	}
 	defer func() { _ = c.Close() }()
 	app := appreg.App{
 		ID:        "a379ed35-a8e0-48c1-bfce-dc5eed92239c",
-		Resource:  "localhost",
+		Resource:  "icomdc.com",
 		SecretKey: "3dp9gudw0l19yr9ois8iu9b3220qemn8",
 	}
 	appS, errM := json.Marshal(app)
