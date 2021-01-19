@@ -15,4 +15,6 @@ const (
 
 	//TemplateDir = "./tmpl"
 	TemplateDir = "/var/www/tmpl/"
+
+	LogPath = "/var/log/jwtsrv.log"
 )
