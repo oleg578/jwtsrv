@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"github.com/oleg578/jwtsrv/config"
+	"github.com/oleg578/jwtsrv/logger"
 	"golang.org/x/crypto/acme/autocert"
 	"html/template"
 	"log"
@@ -13,6 +14,9 @@ import (
 )
 
 func main() {
+	if err := logger.Start(config.LogPath, ""); err != nil {
+		log.Fatal(err)
+	}
 	router.TmplPool = template.Must(template.ParseGlob(config.TemplateDir + "*.html"))
 
 	rootHandler := http.HandlerFunc(router.IndexHandler)
@@ -57,7 +61,7 @@ func main() {
 	}
 	//production
 	go http.ListenAndServe(":http", certManager.HTTPHandler(nil))
-	log.Fatal(srv.ListenAndServeTLS("", ""))
+	logger.Fatal(srv.ListenAndServeTLS("", ""))
 	//local debug
 	//log.Fatal(srv.ListenAndServe())
 }
