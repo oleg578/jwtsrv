@@ -11,6 +11,7 @@ import (
 
 type AssertsMap map[string]string
 
+// User can have asserts for each Application ID
 type Claim struct {
 	AppID   string     `json:"AppID"`
 	Asserts AssertsMap `json:"Assert"`
