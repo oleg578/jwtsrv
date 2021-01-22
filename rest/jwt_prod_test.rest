@@ -1,34 +1,34 @@
 
 ###normal
-POST https://icomdc.com/authorize HTTP/1.1
+POST https://accounts.bwretail.com/authorize HTTP/1.1
 X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239c
 content-type: application/x-www-form-urlencoded
 
 email=oleg.nagornij@gmail.com&passwd=corner578
 
 ###wrong appid
-POST https://icomdc.com/authorize HTTP/1.1
+POST https://accounts.bwretail.com/authorize HTTP/1.1
 X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239d
 content-type: application/x-www-form-urlencoded
 
 email=oleg.nagornij@gmail.com&passwd=corner578
 
 ###wrong user
-POST https://icomdc.com/authorize HTTP/1.1
+POST https://accounts.bwretail.com/authorize HTTP/1.1
 X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239c
 content-type: application/x-www-form-urlencoded
 
 email=unknown.user@gmail.com&passwd=corner578
 
 ###wrong password
-POST https://icomdc.com/authorize HTTP/1.1
+POST https://accounts.bwretail.com/authorize HTTP/1.1
 X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239c
 content-type: application/x-www-form-urlencoded
 
 email=oleg.nagornij@gmail.com&passwd=wrongpasswd
 
 ###wrong IP
-POST https://icomdc.com/authorize HTTP/1.1
+POST https://accounts.bwretail.com/authorize HTTP/1.1
 X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239c
 content-type: application/x-www-form-urlencoded
 
