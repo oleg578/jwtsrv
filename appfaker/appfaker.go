@@ -16,7 +16,7 @@ func main() {
 	defer func() { _ = c.Close() }()
 	app := appreg.App{
 		ID:        "a379ed35-a8e0-48c1-bfce-dc5eed92239c",
-		Resource:  "icomdc.com",
+		Resource:  "accounts.bwretail.com",
 		SecretKey: "3dp9gudw0l19yr9ois8iu9b3220qemn8",
 	}
 	appS, errM := json.Marshal(app)
