@@ -84,5 +84,6 @@ func renderTmpl(w http.ResponseWriter, data interface{}, views ...string) {
 
 // LoginHandler route
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	//TODO add X-AppID header from get param appid
 	renderTmpl(w, nil, "login.html")
 }
