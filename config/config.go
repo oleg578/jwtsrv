@@ -2,7 +2,7 @@ package config
 
 const (
 	AdminMail = "oleg.nagornij@gmail.com"
-	Domain    = "icomdc.com"
+	Domain    = "accounts.bwretail.com"
 	CertPath  = "/etc/autocert/ssl/"
 
 	MAXBODYLENGTH = 2048
