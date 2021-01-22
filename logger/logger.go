@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-
-	"github.com/oleg578/jwtsrv/config"
 )
 
 var (
@@ -34,12 +32,12 @@ func GetLogger() *log.Logger {
 	return lstd
 }
 
-func init() {
-	f, err := os.OpenFile(config.LogPath,
-		os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
+func Start(logPath, prefix string) error {
+	f, err := os.OpenFile(logPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	lstd = log.New(f, "", log.LstdFlags|log.Lshortfile)
-	lstd.SetPrefix("")
+	lstd = log.New(f, prefix, log.LstdFlags|log.Lshortfile)
+	lstd.SetPrefix(prefix)
+	return nil
 }
