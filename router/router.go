@@ -39,7 +39,6 @@ func ResponseBuild(w http.ResponseWriter, resp APIResp) {
 // IndexHandler route
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	var Resp APIResp
-	log.Println(r.Header)
 	Resp.Response = r.Host
 	ResponseBuild(w, Resp)
 }
@@ -85,6 +84,5 @@ func renderTmpl(w http.ResponseWriter, data interface{}, views ...string) {
 
 // LoginHandler route
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.Header)
 	renderTmpl(w, nil, "login.html")
 }
