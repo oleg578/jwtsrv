@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	appreg "github.com/oleg578/jwtsrv/appregister"
@@ -77,7 +78,8 @@ func AppCheckMiddleware(next http.Handler) http.Handler {
 			ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 			return
 		}
-
+		//propagate application_id over context
+		r = r.WithContext(context.WithValue(r.Context(), "application_id", appId))
 		next.ServeHTTP(w, r)
 	})
 }

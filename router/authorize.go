@@ -35,7 +35,7 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//test application id in white list from header X-AppID
-	//TODO: build middleware
+
 	appId := r.Header.Get("X-AppID")
 	if len(appId) == 0 {
 		err := fmt.Errorf("wrong application resource")
