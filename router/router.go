@@ -84,16 +84,14 @@ func AppCheckMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func renderTmpl(w http.ResponseWriter, data interface{}, views ...string) {
-	for _, view := range views {
-		if err := TmplPool.ExecuteTemplate(w, view, data); err != nil {
-			log.Printf("view: %v template execution error: %s", view, err.Error())
-		}
+func renderTmpl(w http.ResponseWriter, data interface{}, view string) {
+	if err := TmplPool.ExecuteTemplate(w, view, data); err != nil {
+		log.Printf("view: %v template execution error: %s", view, err.Error())
 	}
 }
 
 // LoginHandler route
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	//TODO add X-AppID header from get param appid
-	renderTmpl(w, nil, "login.html")
+	data := r.Context().Value("application_id")
+	renderTmpl(w, data, "login.html")
 }

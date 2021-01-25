@@ -34,20 +34,6 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
-	//test application id in white list from header X-AppID
-
-	appId := r.Header.Get("X-AppID")
-	if len(appId) == 0 {
-		err := fmt.Errorf("wrong application resource")
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-		return
-	}
-	app, errRsc := appreg.GetByID(appId)
-	if errRsc != nil {
-		err := fmt.Errorf("wrong application resource")
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-		return
-	}
 	if err := r.ParseForm(); err != nil {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
