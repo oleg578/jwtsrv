@@ -28,3 +28,17 @@ func GetByID(id string) (app App, err error) {
 	err = json.Unmarshal(rsc, &app)
 	return
 }
+
+func ExistsByID(id string) (exists bool, err error) {
+	con, errCon := redis.Dial("tcp", config.RedisDSN)
+	if errCon != nil {
+		return false, errCon
+	}
+	defer func() { _ = con.Close() }()
+	exists, errG := redis.Bool(con.Do("HEXISTS", "appregister", id))
+	if errG != nil {
+		err = fmt.Errorf("app not found: %v", errG)
+		return false, err
+	}
+	return
+}

@@ -2,5 +2,7 @@
 
 JWT authorize server
 
-
-Special header for authorize - X-AppID
+## Authorize
+### Application ID can be in (one of)
+ - header X-AppID with application ID
+ - request parameter "application_id" 
