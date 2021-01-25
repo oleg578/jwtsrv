@@ -52,6 +52,13 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
+	appId := r.Context().Value("application_id").(string)
+	app, errRsc := appreg.GetByID(appId)
+	if errRsc != nil {
+		err := fmt.Errorf("wrong application resource")
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		return
+	}
 	//payload build
 	payload, errPb := payloadBuild(app, eml, pswd)
 	if errPb != nil {
