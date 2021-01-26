@@ -1,10 +1,8 @@
 package main
 
 import (
-	"crypto/tls"
 	"github.com/oleg578/jwtsrv/config"
 	"github.com/oleg578/jwtsrv/logger"
-	"golang.org/x/crypto/acme/autocert"
 	"html/template"
 	"log"
 	"net/http"
@@ -40,28 +38,27 @@ func main() {
 	mux.Handle("/renew", router.AppCheckMiddleware(renewHandler))
 
 	//server certManager
-	certManager := &autocert.Manager{
-		Prompt:     autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist(config.Domain),
-		Cache:      autocert.DirCache(config.CertPath),
-		Email:      config.AdminMail,
-	}
-
+	//certManager := &autocert.Manager{
+	//	Prompt:     autocert.AcceptTOS,
+	//	HostPolicy: autocert.HostWhitelist(config.Domain),
+	//	Cache:      autocert.DirCache(config.CertPath),
+	//	Email:      config.AdminMail,
+	//}
 	//server
 	srv := &http.Server{
-		Addr: ":https", // production
-		//Addr:           ":5000", // dev
+		//Addr: ":https", // production
+		Addr:           ":5000", // dev
 		Handler:        mux,
 		ReadTimeout:    60 * time.Second,
 		WriteTimeout:   60 * time.Second,
 		MaxHeaderBytes: 1 << 20,
-		TLSConfig: &tls.Config{
-			GetCertificate: certManager.GetCertificate,
-		},
+		//TLSConfig: &tls.Config{
+		//	GetCertificate: certManager.GetCertificate,
+		//},
 	}
 	//production
-	go http.ListenAndServe(":http", certManager.HTTPHandler(nil))
-	logger.Fatal(srv.ListenAndServeTLS("", ""))
+	//go http.ListenAndServe(":http", certManager.HTTPHandler(nil))
+	//logger.Fatal(srv.ListenAndServeTLS("", ""))
 	//local debug
-	//log.Fatal(srv.ListenAndServe())
+	log.Fatal(srv.ListenAndServe())
 }

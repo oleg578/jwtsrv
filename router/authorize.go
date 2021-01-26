@@ -52,7 +52,25 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
+	//redirect_to from form parse
+	redirectTo := r.Form.Get("redirect_to")
+	//application ID - from context or from form
 	appId := r.Context().Value("application_id").(string)
+	// if is a rest request, redirect may be empty
+	// we check redirect only from login call
+	if len(redirectTo) == 0 && len(appId) == 0 {
+		err := fmt.Errorf("wrong redirect")
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		return
+	}
+	if len(appId) == 0 {
+		appId = r.Form.Get("appid")
+	}
+	if len(appId) == 0 {
+		err := fmt.Errorf("wrong application")
+		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		return
+	}
 	app, errRsc := appreg.GetByID(appId)
 	if errRsc != nil {
 		err := fmt.Errorf("wrong application resource")
