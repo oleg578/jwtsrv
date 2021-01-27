@@ -2,6 +2,7 @@ package router
 
 import (
 	"fmt"
+	"github.com/oleg578/jwtsrv/logger"
 	"net/http"
 	"strings"
 	"time"
@@ -111,6 +112,7 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 func payloadBuild(app appreg.App, eml, pswd string) (payload map[string]interface{}, err error) {
 	payload = make(map[string]interface{})
 	//try get user
+	logger.Printf("user: %s, passwd: %s", eml, pswd)
 	u, errUser := user.GetByEmail(eml)
 	if errUser != nil {
 		return payload, errUser

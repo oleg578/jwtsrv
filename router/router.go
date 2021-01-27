@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	appreg "github.com/oleg578/jwtsrv/appregister"
+	"github.com/oleg578/jwtsrv/logger"
 	"html/template"
 	"log"
 	"net/http"
@@ -55,18 +56,34 @@ func SetHeaders(w http.ResponseWriter) {
 //AppCheckMiddleware Session Middleware
 func AppCheckMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var appId string
-		//check header
+		var (
+			appId  string
+			moveTo string
+		)
+		q := r.URL.Query()
+		//check header X-AppID
 		appId = r.Header.Get("X-AppID")
 		if len(appId) == 0 {
 			//get from URL query
-			q := r.URL.Query()
 			appId = q.Get("application_id")
+		}
+		//TODO: try get application_id from cookie
+		appCookie, err := r.Cookie("app_id")
+		if err != nil {
+			logger.Print(err)
+		} else {
+			appId = appCookie.Value
 		}
 		if len(appId) == 0 {
 			err := fmt.Errorf("wrong application id")
 			ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 			return
+		}
+		//check header X-MoveTo
+		moveTo = r.Header.Get("X-MoveTo")
+		if len(moveTo) == 0 {
+			//get from URL query
+			moveTo = q.Get("redirect_to")
 		}
 		exists, errRsc := appreg.ExistsByID(appId)
 		if errRsc != nil {
@@ -80,6 +97,8 @@ func AppCheckMiddleware(next http.Handler) http.Handler {
 		}
 		//propagate application_id over context
 		r = r.WithContext(context.WithValue(r.Context(), "application_id", appId))
+		//propagate redirect_to over context
+		r = r.WithContext(context.WithValue(r.Context(), "redirect_to", moveTo))
 		next.ServeHTTP(w, r)
 	})
 }
@@ -92,6 +111,17 @@ func renderTmpl(w http.ResponseWriter, data interface{}, view string) {
 
 // LoginHandler route
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	data := r.Context().Value("application_id")
+	data := struct {
+		AppID      string
+		RedirectTo string
+	}{
+		r.Context().Value("application_id").(string),
+		r.Context().Value("redirect_to").(string),
+	}
+	//set cookie with appId
+	http.SetCookie(w, &http.Cookie{
+		Name:  "app_id",
+		Value: data.AppID,
+	})
 	renderTmpl(w, data, "login.html")
 }
