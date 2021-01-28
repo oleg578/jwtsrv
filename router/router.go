@@ -7,7 +7,6 @@ import (
 	appreg "github.com/oleg578/jwtsrv/appregister"
 	"github.com/oleg578/jwtsrv/logger"
 	"html/template"
-	"log"
 	"net/http"
 	"time"
 )
@@ -67,7 +66,7 @@ func AppCheckMiddleware(next http.Handler) http.Handler {
 			//get from URL query
 			appId = q.Get("application_id")
 		}
-		//TODO: try get application_id from cookie
+		//try to get application_id from cookie
 		appCookie, err := r.Cookie("app_id")
 		if err != nil {
 			logger.Print(err)
@@ -105,7 +104,7 @@ func AppCheckMiddleware(next http.Handler) http.Handler {
 
 func renderTmpl(w http.ResponseWriter, data interface{}, view string) {
 	if err := TmplPool.ExecuteTemplate(w, view, data); err != nil {
-		log.Printf("view: %v template execution error: %s", view, err.Error())
+		logger.Printf("view: %v template execution error: %s", view, err.Error())
 	}
 }
 
