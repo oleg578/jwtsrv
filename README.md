@@ -6,3 +6,8 @@ JWT authorize server
 ### Application ID can be in (one of)
  - header X-AppID with application ID
  - request parameter "application_id" 
+
+
+### Production / Local dev mode
+
+environment variable DEVMODE

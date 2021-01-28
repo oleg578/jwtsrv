@@ -8,12 +8,23 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/oleg578/jwtsrv/router"
 )
 
 func main() {
+
+	//if local development mode DEVMODE=true
+	DevMode, _ := strconv.ParseBool(os.Getenv("DEVMODE"))
+	Production := !DevMode
+	if !Production {
+		config.RedisDSN = config.RedisDSNLocal
+		config.TemplateDir = config.TemplateDirLocal
+		config.LogPath = config.LogPathLocal
+	}
 	//start logger
 	if err := logger.Start(config.LogPath, ""); err != nil {
 		log.Fatal(err)
@@ -51,19 +62,27 @@ func main() {
 	}
 	//server
 	srv := &http.Server{
-		Addr: ":https", // production
-		//Addr:           ":5000", // dev
 		Handler:        mux,
 		ReadTimeout:    60 * time.Second,
 		WriteTimeout:   60 * time.Second,
 		MaxHeaderBytes: 1 << 20,
-		TLSConfig: &tls.Config{
+	}
+	if Production {
+		srv.Addr = ":https"
+		srv.TLSConfig = &tls.Config{
 			GetCertificate: certManager.GetCertificate,
-		},
+		}
+	}
+	if DevMode {
+		srv.Addr = ":5000"
 	}
 	//production
-	go http.ListenAndServe(":http", certManager.HTTPHandler(nil))
-	logger.Fatal(srv.ListenAndServeTLS("", ""))
+	if Production {
+		go http.ListenAndServe(":http", certManager.HTTPHandler(nil))
+		logger.Fatal(srv.ListenAndServeTLS("", ""))
+	}
 	//local debug
-	//log.Fatal(srv.ListenAndServe())
+	if DevMode {
+		log.Fatal(srv.ListenAndServe())
+	}
 }
