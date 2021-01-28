@@ -46,7 +46,7 @@ func main() {
 	mux.Handle("/", rootHandler)
 	//GET
 	mux.Handle("/login", router.AppCheckMiddleware(loginHandler))
-	//POST
+	//GET
 	//params apid, email, passwd
 	mux.Handle("/authorize", router.AppCheckMiddleware(authorizeHandler))
 	//POST
