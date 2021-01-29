@@ -1,3 +1,4 @@
 1. User - string - GET ... - uuid->value(JSON)
 2. uuidbyemail get user uuid from email (index)- hash - HSET/HGET  email->uuid
-3. appregister - hash - HSET/HGET appid-> JSON string {Host, SecretKey} 
+3. appregister - hash - HSET/HGET appid-> JSON string {Host, SecretKey}
+4. Tokens - string - GET ... - code-> values(JSON) with 15 minutes expiration

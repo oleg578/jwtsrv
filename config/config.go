@@ -10,6 +10,7 @@ const (
 	AccessDuration  = 1440 * 1000  // 24 hour
 	RefreshDuration = 43200 * 1000 // 30*24 hour
 
+	CODELIFETIME = 900
 )
 
 var (
