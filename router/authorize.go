@@ -3,7 +3,10 @@ package router
 import (
 	"fmt"
 	"github.com/oleg578/jwtsrv/logger"
+	"github.com/oleg578/jwtsrv/token"
+	"github.com/oleg578/jwtsrv/utils"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -15,7 +18,7 @@ import (
 )
 
 //Authorize route
-// input POST
+// input GET
 // input params
 // email, passwd
 // return {"access_token":"abcd","refresh_token":"abcd"}
@@ -23,9 +26,8 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	var (
 		Resp APIResp
 	)
-	//test method
-	if r.Method != "POST" {
-		err := fmt.Errorf("wrong request type")
+	if r.Method != http.MethodPost && r.Method != http.MethodGet {
+		err := fmt.Errorf("wrong method")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
@@ -39,18 +41,9 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
-	//get and test email
-	eml := r.Form.Get("email")
-	if len(eml) == 0 {
-		err := fmt.Errorf("wrong email")
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-		return
-	}
-	//get and test password
-	pswd := r.Form.Get("passwd")
-	if len(pswd) == 0 {
-		err := fmt.Errorf("wrong password")
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+	eml, pswd, errFh := formHandle(r)
+	if errFh != nil {
+		ResponseBuild(w, APIResp{Response: "", Error: errFh.Error()})
 		return
 	}
 	//redirect_to from form parse
@@ -90,9 +83,7 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//change expiration for refresh_token
-	tm := time.Now()
-	tref := tm.Add(time.Minute * config.RefreshDuration)
-	payload["exp"] = tref.Unix()
+	payload["exp"] = setExpiration()
 
 	RefreshToken, errRef := jwts.CreateTokenHS256(payload, app.SecretKey)
 	if errRef != nil {
@@ -106,7 +97,68 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		AccessToken.RawStr,
 		RefreshToken.RawStr,
 	}
-	ResponseBuild(w, Resp)
+	//if call method is get return redirect to with jwtcode
+	//if method is post return with ResponseBuild
+	if r.Method == http.MethodGet {
+		//generate code and save Bag
+		b := &token.Bag{
+			AccessToken:  AccessToken.RawStr,
+			RefreshToken: RefreshToken.RawStr,
+		}
+		code := utils.MD5Hash(AccessToken.RawStr)
+		if err := b.Save(code); err != nil {
+			logger.Printf("tokens store error: %v", err)
+			ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+			return
+		}
+		//redirect
+		moveTo, err := urlAddRedirect(redirectTo, code)
+		if err != nil {
+			ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+			return
+		}
+		http.Redirect(w, r, moveTo, 302)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		ResponseBuild(w, Resp)
+	}
+}
+
+func urlAddRedirect(inpath, code string) (outpath string, err error) {
+	u, errParse := url.Parse(inpath)
+	if errParse != nil {
+		err = errParse
+		return
+	}
+	q := u.Query()
+	q.Add("code", code)
+	u.RawQuery, err = url.QueryUnescape(q.Encode())
+	outpath = u.String()
+	return
+}
+
+func setExpiration() int64 {
+	tm := time.Now()
+	tref := tm.Add(time.Minute * config.RefreshDuration)
+	return tref.Unix()
+}
+
+func formHandle(r *http.Request) (email, passwd string, err error) {
+	//get and test email
+	email = r.Form.Get("email")
+	if len(email) == 0 {
+		err = fmt.Errorf("wrong email")
+		return
+	}
+	//get and test password
+	passwd = r.Form.Get("passwd")
+	if len(passwd) == 0 {
+		err = fmt.Errorf("wrong password")
+		return
+	}
+	return
 }
 
 func payloadBuild(app appreg.App, eml, pswd string) (payload map[string]interface{}, err error) {

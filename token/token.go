@@ -25,7 +25,7 @@ func (b *Bag) Save(code string) error {
 	if errM != nil {
 		return errM
 	}
-	_, err = c.Do("SET", code, bM, config.CODELIFETIME)
+	_, err = c.Do("SET", code, string(bM), "EX", config.CODELIFETIME)
 	return err
 }
 
