@@ -5,7 +5,7 @@ const (
 	Domain    = "accounts.bwretail.com"
 	CertPath  = "/etc/autocert/ssl/"
 
-	MAXBODYLENGTH = 2048
+	MAXBODYLENGTH = 4096
 
 	AccessDuration  = 15 * 60      // 15 minutes (in seconds)
 	RefreshDuration = 12 * 60 * 60 // 12 hour (in seconds)
