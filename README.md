@@ -11,3 +11,7 @@ JWT authorize server
 ### Production / Local dev mode
 
 environment variable DEVMODE
+
+
+### TODO:
+move config into yml file
