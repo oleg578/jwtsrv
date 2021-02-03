@@ -7,8 +7,8 @@ const (
 
 	MAXBODYLENGTH = 2048
 
-	AccessDuration  = 1440 * 1000  // 24 hour
-	RefreshDuration = 43200 * 1000 // 30*24 hour
+	AccessDuration  = 15 * 60      // 15 minutes (in seconds)
+	RefreshDuration = 12 * 60 * 60 // 12 hour (in seconds)
 
 	CODELIFETIME = 900
 )

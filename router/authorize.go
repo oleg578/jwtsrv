@@ -141,7 +141,7 @@ func urlAddRedirect(inpath, code string) (outpath string, err error) {
 
 func setExpiration() int64 {
 	tm := time.Now()
-	tref := tm.Add(time.Minute * config.RefreshDuration)
+	tref := tm.Add(time.Second * config.RefreshDuration)
 	return tref.Unix()
 }
 
@@ -175,7 +175,7 @@ func payloadBuild(app appreg.App, eml, pswd string) (payload map[string]interfac
 		return
 	}
 	tm := time.Now()
-	texp := tm.Add(time.Minute * config.AccessDuration)
+	texp := tm.Add(time.Second * config.AccessDuration)
 	payload["uid"] = u.ID
 	payload["eml"] = u.Email
 	payload["exp"] = texp.Unix()
