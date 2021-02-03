@@ -41,7 +41,7 @@ func main() {
 	asserts := make(user.AssertsMap)
 	asserts["role"] = "admin"
 	asserts["account"] = "*"
-	claim := user.NewClaim(uuid.New().String(), asserts)
+	claim := user.NewClaim("a379ed35-a8e0-48c1-bfce-dc5eed92239c", asserts)
 	user1.Claims = append(user1.Claims, *claim)
 	if err := user1.Save(); err != nil {
 		log.Fatalln("save error: ", err)
