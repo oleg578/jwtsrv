@@ -1,28 +1,28 @@
 
 ###normal
-POST http://jwt.dev/authorize HTTP/1.1
-Bw-Appid: a379ed35-a8e0-48c1-bfce-dc5eed92239c
+POST http://192.168.1.20:5000/authorize HTTP/1.1
+X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239c
 content-type: application/x-www-form-urlencoded
 
-email=oleg.nagornij@gmail.com&passwd=corner578&uip=192.168.1.20
+email=oleg.nagornij@gmail.com&passwd=corner578
 
 ###wrong appid
-POST http://jwt.dev/authorize HTTP/1.1
-Bw-Appid: a379ed35-a8e0-48c1-bfce-dc5eed92239d
+POST http://192.168.1.20:5000/authorize HTTP/1.1
+X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239d
 content-type: application/x-www-form-urlencoded
 
-email=oleg.nagornij@gmail.com&passwd=corner578&uip=192.168.1.20
+email=oleg.nagornij@gmail.com&passwd=corner578
 
 ###wrong user
-POST http://jwt.dev/authorize HTTP/1.1
-Bw-Appid: a379ed35-a8e0-48c1-bfce-dc5eed92239c
+POST http://192.168.1.20:5000/authorize HTTP/1.1
+X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239c
 content-type: application/x-www-form-urlencoded
 
-email=unknown.user@gmail.com&passwd=corner578&uip=192.168.1.20
+email=unknown.user@gmail.com&passwd=corner578
 
 ###wrong password
-POST http://jwt.dev/authorize HTTP/1.1
-Bw-Appid: a379ed35-a8e0-48c1-bfce-dc5eed92239c
+POST http://192.168.1.20:5000/authorize HTTP/1.1
+X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239c
 content-type: application/x-www-form-urlencoded
 
-email=oleg.nagornij@gmail.com&passwd=wrongpasswd&uip=192.168.1.20
+email=oleg.nagornij@gmail.com&passwd=wrongpasswd
