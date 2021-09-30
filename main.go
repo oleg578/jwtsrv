@@ -54,8 +54,7 @@ func main() {
 	//params refresh_token
 	mux.Handle("/renew", router.AppCheckMiddleware(renewHandler))
 
-	//GET
-	//get tokens pair for code
+	//GET tokens pair for code
 	mux.Handle("/origin", router.AppCheckMiddleware(originHandler))
 
 	//server certManager

@@ -8,4 +8,4 @@ test valid request for exists application id in white list
 
 get from redis pair appid->host (hashes : "appwhitelist")
 
-after get we test host with host (or IP ?)
+after get, we test host with host (or IP ?)
