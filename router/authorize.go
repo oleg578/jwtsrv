@@ -2,13 +2,14 @@ package router
 
 import (
 	"fmt"
-	"github.com/oleg578/jwtsrv/logger"
-	"github.com/oleg578/jwtsrv/token"
-	"github.com/oleg578/jwtsrv/utils"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/oleg578/jwtsrv/logger"
+	"github.com/oleg578/jwtsrv/token"
+	"github.com/oleg578/jwtsrv/utils"
 
 	"github.com/google/uuid"
 	"github.com/oleg578/jwts"
@@ -84,7 +85,6 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	//change expiration for refresh_token
 	payload["exp"] = setExpiration()
-
 	RefreshToken, errRef := jwts.CreateTokenHS256(payload, app.SecretKey)
 	if errRef != nil {
 		ResponseBuild(w, APIResp{Response: "", Error: errRef.Error()})
@@ -120,7 +120,6 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, moveTo, 302)
 		return
 	}
-
 	if r.Method == http.MethodPost {
 		ResponseBuild(w, Resp)
 	}
