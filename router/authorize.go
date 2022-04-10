@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/oleg578/jwtsrv/logger"
 	"github.com/oleg578/jwtsrv/token"
 	"github.com/oleg578/jwtsrv/utils"
+	logger "github.com/oleg578/loglog"
 
 	"github.com/google/uuid"
 	"github.com/oleg578/jwts"

@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	appreg "github.com/oleg578/jwtsrv/appregister"
-	"github.com/oleg578/jwtsrv/logger"
 	"html/template"
 	"net/http"
 	"time"
+
+	appreg "github.com/oleg578/jwtsrv/appregister"
+	logger "github.com/oleg578/loglog"
 )
 
 var (

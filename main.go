@@ -2,15 +2,16 @@ package main
 
 import (
 	"crypto/tls"
-	"github.com/oleg578/jwtsrv/config"
-	"github.com/oleg578/jwtsrv/logger"
-	"golang.org/x/crypto/acme/autocert"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/oleg578/jwtsrv/config"
+	logger "github.com/oleg578/loglog"
+	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/oleg578/jwtsrv/router"
 )
@@ -25,8 +26,8 @@ func main() {
 		config.TemplateDir = config.TemplateDirLocal
 		config.LogPath = config.LogPathLocal
 	}
-	//start logger
-	if err := logger.Start(config.LogPath, ""); err != nil {
+	//logger
+	if err := logger.New(config.LogPath, "", logger.LstdFlags); err != nil {
 		log.Fatal(err)
 	}
 	//templates
