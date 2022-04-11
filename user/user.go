@@ -13,29 +13,31 @@ type AssertsMap map[string]string
 
 // User can have asserts for each Application ID
 type Claim struct {
-	AppID   string     `json:"AppID"`
-	Asserts AssertsMap `json:"Assert"` // map[string]string resource -> role
+	Resource string     `json:"Resource"`
+	Asserts  AssertsMap `json:"Assert"` // map[string]string resource -> role
 }
 
 type User struct {
-	ID       string  `json:"ID"`
-	Email    string  `json:"Email"`
-	Password string  `json:"Password"`
-	Claims   []Claim `json:"Claims"` //claims for each application
+	ID        string  `json:"ID"`
+	Email     string  `json:"Email"`
+	Password  string  `json:"Password"`
+	SecretKey string  `json:"SecretKey"`
+	Claims    []Claim `json:"Claims"` //claims for each application
 }
 
-func New(id, email, pswd string) *User {
+func New(id, email, pswd, secret string) *User {
 	return &User{
-		ID:       strings.TrimSpace(id),
-		Email:    strings.TrimSpace(email),
-		Password: strings.TrimSpace(pswd),
+		ID:        strings.TrimSpace(id),
+		Email:     strings.TrimSpace(email),
+		Password:  strings.TrimSpace(pswd),
+		SecretKey: strings.TrimSpace(secret),
 	}
 }
 
-func NewClaim(appid string, asserts AssertsMap) *Claim {
+func NewClaim(resource string, asserts AssertsMap) *Claim {
 	claim := &Claim{
-		AppID:   appid,
-		Asserts: make(AssertsMap, len(asserts)),
+		Resource: resource,
+		Asserts:  make(AssertsMap, len(asserts)),
 	}
 	for key, val := range asserts {
 		claim.Asserts[key] = val

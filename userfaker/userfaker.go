@@ -37,7 +37,8 @@ func main() {
 	user1ID := uuid.New().String()
 	user1Email := "oleg.nagornij@gmail.com"
 	user1Pswd := "corner578"
-	user1 := user.New(user1ID, user1Email, user1Pswd)
+	secret := "secret"
+	user1 := user.New(user1ID, user1Email, user1Pswd, secret)
 	asserts := make(user.AssertsMap)
 	asserts["role"] = "admin"
 	asserts["account"] = "*"

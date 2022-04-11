@@ -1,14 +1,11 @@
 package router
 
 import (
-	"context"
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"net/http"
 	"time"
 
-	appreg "github.com/oleg578/jwtsrv/appregister"
 	logger "github.com/oleg578/loglog"
 )
 
@@ -51,56 +48,6 @@ func SetHeaders(w http.ResponseWriter) {
 	w.Header().Add("Access-Control-Allow-Headers", "Access-Control-Allow-Origin")
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Credentials", "true")
-}
-
-//AppCheckMiddleware Session Middleware
-func AppCheckMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var (
-			appId  string
-			moveTo string
-		)
-		q := r.URL.Query()
-		//check header X-AppID
-		appId = r.Header.Get("X-AppID")
-		if len(appId) == 0 {
-			//get from URL query
-			appId = q.Get("application_id")
-		}
-		//try to get application_id from cookie
-		appCookie, err := r.Cookie("app_id")
-		if err != nil {
-			logger.Print(err)
-		} else {
-			appId = appCookie.Value
-		}
-		if len(appId) == 0 {
-			err := fmt.Errorf("wrong application id")
-			ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-			return
-		}
-		//check header X-MoveTo
-		moveTo = r.Header.Get("X-MoveTo")
-		if len(moveTo) == 0 {
-			//get from URL query
-			moveTo = q.Get("redirect_to")
-		}
-		exists, errRsc := appreg.ExistsByID(appId)
-		if errRsc != nil {
-			ResponseBuild(w, APIResp{Response: "", Error: errRsc.Error()})
-			return
-		}
-		if !exists {
-			err := fmt.Errorf("wrong application")
-			ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-			return
-		}
-		//propagate application_id over context
-		r = r.WithContext(context.WithValue(r.Context(), "application_id", appId))
-		//propagate redirect_to over context
-		r = r.WithContext(context.WithValue(r.Context(), "redirect_to", moveTo))
-		next.ServeHTTP(w, r)
-	})
 }
 
 func renderTmpl(w http.ResponseWriter, data interface{}, view string) {

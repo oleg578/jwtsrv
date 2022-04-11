@@ -14,8 +14,7 @@ const (
 )
 
 var (
-	RedisDSN      = `127.0.0.1:6379`
-	RedisDSNLocal = `192.168.1.20:6379`
+	RedisDSN = `127.0.0.1:6379`
 
 	TemplateDirLocal = "./tmpl/"
 	TemplateDir      = "/var/www/tmpl/"

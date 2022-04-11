@@ -31,7 +31,8 @@ func TestUser_Save(t *testing.T) {
 	id := uuid.New().String()
 	newuserEmail := "oleg.nagornij@gmail.com"
 	newuserPswd := "corner578"
-	newuser := New(id, newuserEmail, newuserPswd)
+	secret := "secret"
+	newuser := New(id, newuserEmail, newuserPswd, secret)
 	asserts := make(AssertsMap)
 	asserts["role"] = "admin"
 	asserts["account"] = "*"
@@ -61,15 +62,14 @@ func TestUser_Save(t *testing.T) {
 }
 
 func TestNewClaim(t *testing.T) {
-	newid := uuid.New().String()
 	rsc := "specialresource.com"
 	asserts := make(AssertsMap, 3)
 	asserts["role"] = "admin"
 	asserts["account"] = "12846978"
 	asserts["another"] = "something"
 	clm := &Claim{
-		AppID:   newid,
-		Asserts: asserts,
+		Resource: rsc,
+		Asserts:  asserts,
 	}
 	type args struct {
 		appid    string
@@ -84,7 +84,7 @@ func TestNewClaim(t *testing.T) {
 		{
 			"NewClaimTest",
 			args{
-				newid,
+				rsc,
 				rsc,
 				asserts,
 			},
@@ -104,15 +104,18 @@ func TestNew(t *testing.T) {
 	id := uuid.New().String()
 	email := "oleg.nagornij@gmail.com"
 	pswd := "corner578"
+	secret := "secret"
 	userT := &User{
-		ID:       id,
-		Email:    email,
-		Password: pswd,
+		ID:        id,
+		Email:     email,
+		Password:  pswd,
+		SecretKey: secret,
 	}
 	type args struct {
-		id    string
-		email string
-		pswd  string
+		id     string
+		email  string
+		pswd   string
+		secret string
 	}
 	tests := []struct {
 		name string
@@ -125,13 +128,14 @@ func TestNew(t *testing.T) {
 				id,
 				email,
 				pswd,
+				secret,
 			},
 			userT,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := New(tt.args.id, tt.args.email, tt.args.pswd); !reflect.DeepEqual(got, tt.want) {
+			if got := New(tt.args.id, tt.args.email, tt.args.pswd, tt.args.secret); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("New() = %v, want %v", got, tt.want)
 			}
 		})
@@ -141,7 +145,8 @@ func TestNew(t *testing.T) {
 func BenchmarkSave(b *testing.B) {
 	newuserEmail := "oleg.nagornij@gmail.com"
 	newuserPswd := "corner578"
-	newuser := New("", newuserEmail, newuserPswd)
+	secret := "secret"
+	newuser := New("", newuserEmail, newuserPswd, secret)
 	asserts := make(AssertsMap)
 	asserts["role"] = "admin"
 	asserts["account"] = "*"
@@ -156,7 +161,8 @@ func BenchmarkSave(b *testing.B) {
 func TestGetByEmail(t *testing.T) {
 	user1Email := "oleg.nagornij@gmail.com"
 	user1Pswd := "corner578"
-	user1 := New("", user1Email, user1Pswd)
+	secret := "secret"
+	user1 := New("", user1Email, user1Pswd, secret)
 	asserts := make(AssertsMap)
 	asserts["role"] = "admin"
 	asserts["account"] = "*"
@@ -184,7 +190,7 @@ func TestGetByEmail(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			gotU, err := GetByEmail(tt.args.email)
 			tt.wantU.ID = gotU.ID
-			tt.wantU.Claims[0].AppID = gotU.Claims[0].AppID
+			tt.wantU.Claims[0].Resource = gotU.Claims[0].Resource
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetByEmail() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -22,7 +22,6 @@ func main() {
 	DevMode, _ := strconv.ParseBool(os.Getenv("DEVMODE"))
 	Production := !DevMode
 	if !Production {
-		config.RedisDSN = config.RedisDSNLocal
 		config.TemplateDir = config.TemplateDirLocal
 		config.LogPath = config.LogPathLocal
 	}
@@ -47,16 +46,16 @@ func main() {
 	//mux.Handle("/", router.AppCheckMiddleware(rootHandler))
 	mux.Handle("/", rootHandler)
 	//GET
-	mux.Handle("/login", router.AppCheckMiddleware(loginHandler))
+	mux.Handle("/login", loginHandler)
 	//GET
 	//params apid, email, passwd
-	mux.Handle("/authorize", router.AppCheckMiddleware(authorizeHandler))
+	mux.Handle("/authorize", authorizeHandler)
 	//POST
 	//params refresh_token
-	mux.Handle("/renew", router.AppCheckMiddleware(renewHandler))
+	mux.Handle("/renew", renewHandler)
 
 	//GET tokens pair for code
-	mux.Handle("/origin", router.AppCheckMiddleware(originHandler))
+	mux.Handle("/origin", originHandler)
 
 	//server certManager
 	certManager := &autocert.Manager{
@@ -79,7 +78,7 @@ func main() {
 		}
 	}
 	if DevMode {
-		srv.Addr = ":5000"
+		srv.Addr = ":http"
 	}
 	//production
 	if Production {

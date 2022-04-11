@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/oleg578/jwts"
-	appreg "github.com/oleg578/jwtsrv/appregister"
 	"github.com/oleg578/jwtsrv/config"
 	"github.com/oleg578/jwtsrv/user"
 )
@@ -26,15 +25,15 @@ func RenewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//test appId in white list from header Bw-Appid
-	appId := r.Header.Get("Bw-Appid")
-	if len(appId) == 0 {
+	userId := r.Header.Get("Bw-UID")
+	if len(userId) == 0 {
 		err := fmt.Errorf("wrong application resource")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
-	app, errRsc := appreg.GetByID(appId)
-	if errRsc != nil {
-		err := fmt.Errorf("wrong application resource")
+	user, errUsr := user.GetByID(userId)
+	if errUsr != nil {
+		err := fmt.Errorf("wrong user")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
@@ -57,7 +56,7 @@ func RenewHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
-	errV := refTok.Validate(app.SecretKey)
+	errV := refTok.Validate(user.SecretKey)
 	if errV != nil {
 		err := fmt.Errorf("token is not valid")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
@@ -66,25 +65,20 @@ func RenewHandler(w http.ResponseWriter, r *http.Request) {
 	//token valid - we can build new
 	//test user exists
 	//try get user
-	_, errUser := user.GetByID(refTok.Payload["uid"].(string))
-	if errUser != nil {
-		ResponseBuild(w, APIResp{Response: "", Error: errUser.Error()})
-		return
-	}
 	//build tokens
 	payload := refTok.Payload
 	tm := time.Now()
 	texp := tm.Add(time.Minute * config.AccessDuration)
 	tref := tm.Add(time.Minute * config.RefreshDuration)
 	payload["exp"] = texp.Unix()
-	AccessToken, err := jwts.CreateTokenHS256(payload, app.SecretKey)
+	AccessToken, err := jwts.CreateTokenHS256(payload, user.SecretKey)
 	if err != nil {
 		time.Sleep(time.Second * 5)
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
 	payload["exp"] = tref.Unix()
-	RefreshToken, errRef := jwts.CreateTokenHS256(payload, app.SecretKey)
+	RefreshToken, errRef := jwts.CreateTokenHS256(payload, user.SecretKey)
 	if errRef != nil {
 		ResponseBuild(w, APIResp{Response: "", Error: errRef.Error()})
 		return

@@ -13,7 +13,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/oleg578/jwts"
-	appreg "github.com/oleg578/jwtsrv/appregister"
 	"github.com/oleg578/jwtsrv/config"
 	"github.com/oleg578/jwtsrv/user"
 )
@@ -38,6 +37,12 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
+	u, errURL := url.Parse(r.Referer())
+	if errURL != nil {
+		ResponseBuild(w, APIResp{Response: "", Error: errURL.Error()})
+		return
+	}
+	ref := u.Host
 	if err := r.ParseForm(); err != nil {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
@@ -49,43 +54,27 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	//redirect_to from form parse
 	redirectTo := r.Form.Get("redirect_to")
-	//application ID - from context or from form
-	appId := r.Context().Value("application_id").(string)
 	// if is a rest request, redirect may be empty
 	// we check redirect only from login call
-	if len(redirectTo) == 0 && len(appId) == 0 {
+	if len(redirectTo) == 0 {
 		err := fmt.Errorf("wrong redirect")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
-	if len(appId) == 0 {
-		appId = r.Form.Get("appid")
-	}
-	if len(appId) == 0 {
-		err := fmt.Errorf("wrong application")
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-		return
-	}
-	app, errRsc := appreg.GetByID(appId)
-	if errRsc != nil {
-		err := fmt.Errorf("wrong application resource")
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-		return
-	}
 	//payload build
-	payload, errPb := payloadBuild(app, eml, pswd)
+	payload, secret, errPb := payloadBuild(ref, eml, pswd)
 	if errPb != nil {
 		ResponseBuild(w, APIResp{Response: "", Error: errPb.Error()})
 		return
 	}
-	AccessToken, err := jwts.CreateTokenHS256(payload, app.SecretKey)
+	AccessToken, err := jwts.CreateTokenHS256(payload, secret)
 	if err != nil {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
 	//change expiration for refresh_token
 	payload["exp"] = setExpiration()
-	RefreshToken, errRef := jwts.CreateTokenHS256(payload, app.SecretKey)
+	RefreshToken, errRef := jwts.CreateTokenHS256(payload, secret)
 	if errRef != nil {
 		ResponseBuild(w, APIResp{Response: "", Error: errRef.Error()})
 		return
@@ -160,13 +149,13 @@ func formHandle(r *http.Request) (email, passwd string, err error) {
 	return
 }
 
-func payloadBuild(app appreg.App, eml, pswd string) (payload map[string]interface{}, err error) {
+func payloadBuild(referer, eml, pswd string) (payload map[string]interface{}, secret string, err error) {
 	payload = make(map[string]interface{})
-	//try get user
+	//try to get user
 	logger.Printf("user: %s, passwd: %s", eml, pswd)
-	u, errUser := user.GetByEmail(eml)
-	if errUser != nil {
-		return payload, errUser
+	u, err := user.GetByEmail(eml)
+	if err != nil {
+		return nil, "", err
 	}
 	//test user passwd
 	if u.Password != pswd {
@@ -179,12 +168,11 @@ func payloadBuild(app appreg.App, eml, pswd string) (payload map[string]interfac
 	payload["eml"] = u.Email
 	payload["exp"] = texp.Unix()
 	for _, c := range u.Claims {
-		if c.AppID == app.ID {
+		if c.Resource == referer {
 			payload["clm"] = c
 		}
 	}
-	sr := strings.NewReader(payload["uid"].(string) +
-		app.SecretKey)
+	sr := strings.NewReader(payload["uid"].(string) + u.SecretKey)
 	jti, errJti := uuid.NewRandomFromReader(sr)
 	if errJti != nil {
 		jti, errJti = uuid.NewRandom()
