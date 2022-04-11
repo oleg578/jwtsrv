@@ -19,7 +19,7 @@ import (
 func main() {
 
 	//if local development mode DEVMODE=true
-	DevMode, _ := strconv.ParseBool(os.Getenv("DEVMODE"))
+	DevMode, _ := strconv.ParseBool(os.Getenv("DEV"))
 	Production := !DevMode
 	if !Production {
 		config.TemplateDir = config.TemplateDirLocal
