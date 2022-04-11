@@ -14,14 +14,14 @@ type AssertsMap map[string]string
 // User can have asserts for each Application ID
 type Claim struct {
 	AppID   string     `json:"AppID"`
-	Asserts AssertsMap `json:"Assert"`
+	Asserts AssertsMap `json:"Assert"` // map[string]string resource -> role
 }
 
 type User struct {
 	ID       string  `json:"ID"`
 	Email    string  `json:"Email"`
 	Password string  `json:"Password"`
-	Claims   []Claim `json:"Claims"`
+	Claims   []Claim `json:"Claims"` //claims for each application
 }
 
 func New(id, email, pswd string) *User {
@@ -58,7 +58,7 @@ func (u *User) Save() error {
 	if err != nil {
 		return err
 	}
-	err = u.EmailIndAppend(c)
+	err = u.EmailIndexAppend(c)
 	return err
 }
 
@@ -79,7 +79,7 @@ func GetByID(id string) (u User, err error) {
 	return
 }
 
-func (u *User) EmailIndAppend(c redis.Conn) error {
+func (u *User) EmailIndexAppend(c redis.Conn) error {
 	_, err := c.Do("HSET", "uidbyemail", u.Email, u.ID)
 	if err != nil {
 		return err
