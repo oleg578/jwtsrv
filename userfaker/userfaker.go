@@ -22,7 +22,7 @@ func newPool(addr string) *redis.Pool {
 			if err != nil {
 				return nil, err
 			}
-			if _, err := c.Do("SELECT", 2); err != nil {
+			if _, err := c.Do("SELECT", 0); err != nil {
 				_ = c.Close()
 				return nil, err
 			}
@@ -41,8 +41,7 @@ func main() {
 	user1 := user.New(user1ID, user1Email, user1Pswd, secret)
 	asserts := make(user.AssertsMap)
 	asserts["role"] = "admin"
-	asserts["account"] = "*"
-	claim := user.NewClaim("a379ed35-a8e0-48c1-bfce-dc5eed92239c", asserts)
+	claim := user.NewClaim("fixmytoys.com", asserts)
 	user1.Claims = append(user1.Claims, *claim)
 	if err := user1.Save(); err != nil {
 		log.Fatalln("save error: ", err)
