@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/oleg578/jwtsrv/appflags"
 	"github.com/oleg578/jwtsrv/config"
 	logger "github.com/oleg578/loglog"
 	"golang.org/x/crypto/acme/autocert"
@@ -17,14 +18,9 @@ import (
 )
 
 func main() {
-
-	//if local development mode DEVMODE=true
-	DevMode, _ := strconv.ParseBool(os.Getenv("DEV"))
-	Production := !DevMode
-	if !Production {
-		config.TemplateDir = config.TemplateDirLocal
-		config.LogPath = config.LogPathLocal
-	}
+	appflags.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
+	appflags.Dev, _ = strconv.ParseBool(os.Getenv("DEV"))
+	setEnv(appflags.Dev)
 	//logger
 	if err := logger.New(config.LogPath, "", logger.LstdFlags); err != nil {
 		log.Fatal(err)
@@ -46,16 +42,16 @@ func main() {
 	//mux.Handle("/", router.AppCheckMiddleware(rootHandler))
 	mux.Handle("/", rootHandler)
 	//GET
-	mux.Handle("/login", loginHandler)
+	mux.Handle("/login", router.AppCheckMiddleware(loginHandler))
 	//GET
 	//params apid, email, passwd
-	mux.Handle("/authorize", authorizeHandler)
+	mux.Handle("/authorize", router.AppCheckMiddleware(authorizeHandler))
 	//POST
 	//params refresh_token
-	mux.Handle("/renew", renewHandler)
+	mux.Handle("/renew", router.AppCheckMiddleware(renewHandler))
 
 	//GET tokens pair for code
-	mux.Handle("/origin", originHandler)
+	mux.Handle("/origin", router.AppCheckMiddleware(originHandler))
 
 	//server certManager
 	certManager := &autocert.Manager{
@@ -71,22 +67,43 @@ func main() {
 		WriteTimeout:   60 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-	if Production {
+	if !appflags.Dev {
 		srv.Addr = ":https"
 		srv.TLSConfig = &tls.Config{
 			GetCertificate: certManager.GetCertificate,
 		}
 	}
-	if DevMode {
+	if appflags.Dev {
 		srv.Addr = ":http"
 	}
 	//production
-	if Production {
+	if !appflags.Dev {
 		go http.ListenAndServe(":http", certManager.HTTPHandler(nil))
 		logger.Fatal(srv.ListenAndServeTLS("", ""))
 	}
 	//local debug
-	if DevMode {
+	if appflags.Dev {
 		log.Fatal(srv.ListenAndServe())
 	}
+}
+
+func setEnv(devmode bool) {
+	if devmode {
+		config.AdminMail = "oleg.nagornij@gmail.com"
+		config.Domain = "accounts.bwretail.com"
+		config.CertPath = "/etc/autocert/ssl/"
+		config.CODELIFETIME = 900
+		config.RedisDSN = `127.0.0.1:6379`
+		config.TemplateDir = "./tmpl/"
+		config.LogPath = "./log/jwtsrv.log"
+	} else {
+		config.AdminMail = "oleg.nagornij@gmail.com"
+		config.Domain = "accounts.bwretail.com"
+		config.CertPath = "/etc/autocert/ssl/"
+		config.CODELIFETIME = 900
+		config.RedisDSN = `127.0.0.1:6379`
+		config.TemplateDir = "/var/www/tmpl/"
+		config.LogPath = "/var/log/jwtsrv.log"
+	}
+
 }

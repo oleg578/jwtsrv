@@ -1,7 +1,9 @@
 package router
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"net/http"
 	"time"
@@ -59,16 +61,39 @@ func renderTmpl(w http.ResponseWriter, data interface{}, view string) {
 // LoginHandler route
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
-		AppID      string
 		RedirectTo string
 	}{
-		r.Context().Value("application_id").(string),
 		r.Context().Value("redirect_to").(string),
 	}
-	//set cookie with appId
-	http.SetCookie(w, &http.Cookie{
-		Name:  "app_id",
-		Value: data.AppID,
-	})
 	renderTmpl(w, data, "login.html")
+}
+
+//AppCheckMiddleware Session Middleware
+func AppCheckMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var (
+			moveTo string
+		)
+		q := r.URL.Query()
+		//check header X-MoveTo
+		moveTo = r.Header.Get("X-MoveTo")
+		if len(moveTo) == 0 {
+			//get from URL query
+			moveTo = q.Get("redirect_to")
+		}
+		// find allowed host
+		exists := true
+		//if errRsc != nil {
+		//	ResponseBuild(w, APIResp{Response: "", Error: errRsc.Error()})
+		//	return
+		//}
+		if !exists {
+			err := fmt.Errorf("wrong application")
+			ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+			return
+		}
+		//propagate redirect_to over context
+		r = r.WithContext(context.WithValue(r.Context(), "redirect_to", moveTo))
+		next.ServeHTTP(w, r)
+	})
 }

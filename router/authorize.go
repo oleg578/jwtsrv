@@ -2,11 +2,13 @@ package router
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
+	"github.com/oleg578/jwtsrv/appflags"
 	"github.com/oleg578/jwtsrv/token"
 	"github.com/oleg578/jwtsrv/utils"
 	logger "github.com/oleg578/loglog"
@@ -38,11 +40,18 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u, errURL := url.Parse(r.Referer())
+	if appflags.Debug {
+		log.Printf("request referer: %s", r.Referer())
+		log.Printf("referer parsed: %+v", u)
+	}
 	if errURL != nil {
 		ResponseBuild(w, APIResp{Response: "", Error: errURL.Error()})
 		return
 	}
 	ref := u.Host
+	if appflags.Debug {
+		log.Printf("referer: %s", ref)
+	}
 	if err := r.ParseForm(); err != nil {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return

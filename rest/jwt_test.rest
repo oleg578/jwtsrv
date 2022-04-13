@@ -1,28 +1,21 @@
+###
+GET http://localhost HTTP/1.1
 
 ###normal
-POST http://localhost:5000/authorize HTTP/1.1
-X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239c
-content-type: application/x-www-form-urlencoded
-
-email=oleg.nagornij@gmail.com&passwd=corner578
-
-###wrong appid
-POST http://localhost:5000/authorize HTTP/1.1
-X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239d
+POST http://localhost/authorize HTTP/1.1
+Referer: bw-chat.com
 content-type: application/x-www-form-urlencoded
 
 email=oleg.nagornij@gmail.com&passwd=corner578
 
 ###wrong user
-POST http://localhost:5000/authorize HTTP/1.1
-X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239c
+POST http://localhost/authorize HTTP/1.1
 content-type: application/x-www-form-urlencoded
 
 email=unknown.user@gmail.com&passwd=corner578
 
 ###wrong password
-POST http://localhost:5000/authorize HTTP/1.1
-X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239c
+POST http://localhost/authorize HTTP/1.1
 content-type: application/x-www-form-urlencoded
 
 email=oleg.nagornij@gmail.com&passwd=wrongpasswd

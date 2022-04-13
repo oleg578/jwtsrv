@@ -1,11 +1,10 @@
 <?php
 
-$localURL = "http://192.168.1.176:8000";
+$localURL = "http://127.0.0.1:8000";
 echo "<h2>test jwt auth</h2>";
 
 echo "<hr><div><a
-href='https://accounts.bwretail.com/login?".
-"application_id=a379ed35-a8e0-48c1-bfce-dc5eed92239c".
+href='http://localhost/login?".
 "&redirect_to=".$localURL."'>Auth</a></div>"; // auth link to accounts.bwretail.com
 
 if (isset($_GET["code"])) {
@@ -18,7 +17,7 @@ echo "</pre>";
 echo "<hr>";
 
 if (isset($_GET["code"])) {
-    $url =  "https://accounts.bwretail.com/origin?"."code=".
+    $url =  "https://localhost/origin?"."code=".
     $_GET["code"]
     ."&application_id=a379ed35-a8e0-48c1-bfce-dc5eed92239c"; //get tokens by code
     $token_replay = file_get_contents($url);
