@@ -31,9 +31,7 @@ func main() {
 	//handlers
 	rootHandler := http.HandlerFunc(router.IndexHandler)
 	authorizeHandler := http.HandlerFunc(router.AuthorizeHandler)
-	renewHandler := http.HandlerFunc(router.RenewHandler)
 	loginHandler := http.HandlerFunc(router.LoginHandler)
-	originHandler := http.HandlerFunc(router.OriginHandler)
 
 	mux := http.NewServeMux()
 	// routes
@@ -46,12 +44,6 @@ func main() {
 	//GET
 	//params apid, email, passwd
 	mux.Handle("/authorize", router.AppCheckMiddleware(authorizeHandler))
-	//POST
-	//params refresh_token
-	mux.Handle("/renew", router.AppCheckMiddleware(renewHandler))
-
-	//GET tokens pair for code
-	mux.Handle("/origin", router.AppCheckMiddleware(originHandler))
 
 	//server certManager
 	certManager := &autocert.Manager{

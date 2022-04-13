@@ -21,23 +21,20 @@ import (
 // input GET
 // input params
 // email, passwd
-// return {"access_token":"abcd","refresh_token":"abcd"}
+// return redirect with access_token
 func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
-	var (
-		Resp APIResp
-	)
 	if appflags.Debug {
 		log.Printf("AuthorizeHandler request: %+v\n", r)
 	}
-	if r.Method != http.MethodPost && r.Method != http.MethodGet {
-		err := fmt.Errorf("wrong method")
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+	if r.Method != http.MethodGet {
+		time.Sleep(time.Second * 5)
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 	//prevent maliciously sending
 	if r.ContentLength > config.MAXBODYLENGTH {
-		err := fmt.Errorf("request body length limit exceeded")
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		time.Sleep(time.Second * 5)
+		w.WriteHeader(http.StatusRequestEntityTooLarge)
 		return
 	}
 	u, errURL := url.Parse(r.Referer())
@@ -46,7 +43,8 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("referer parsed: %+v", u)
 	}
 	if errURL != nil {
-		ResponseBuild(w, APIResp{Response: "", Error: errURL.Error()})
+		time.Sleep(time.Second * 5)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	ref := u.Host
@@ -54,7 +52,8 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("referer: %s", ref)
 	}
 	if err := r.ParseForm(); err != nil {
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		time.Sleep(time.Second * 5)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if appflags.Debug {
@@ -62,68 +61,49 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	eml, pswd, errFh := formHandle(r)
 	if errFh != nil {
-		ResponseBuild(w, APIResp{Response: "", Error: errFh.Error()})
+		time.Sleep(time.Second * 5)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if appflags.Debug {
 		log.Printf("email: %s, passwd: %s", eml, pswd)
 	}
-
 	//payload build
 	payload, secret, errPb := payloadBuild(ref, eml, pswd)
 	if errPb != nil {
-		ResponseBuild(w, APIResp{Response: "", Error: errPb.Error()})
+		time.Sleep(time.Second * 5)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	AccessToken, err := jwts.CreateTokenHS256(payload, secret)
 	if err != nil {
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+		time.Sleep(time.Second * 5)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	//change expiration for refresh_token
 	payload["exp"] = setExpiration()
-	RefreshToken, errRef := jwts.CreateTokenHS256(payload, secret)
-	if errRef != nil {
-		ResponseBuild(w, APIResp{Response: "", Error: errRef.Error()})
-		return
-	}
 	//if call method is get return redirect to with jwtcode
-	//if method is post return with ResponseBuild
-	if r.Method == http.MethodPost {
-		Resp.Response = struct {
-			AccessToken  string `json:"access_token"`
-			RefreshToken string `json:"refresh_token"`
-		}{
-			AccessToken.RawStr,
-			RefreshToken.RawStr,
-		}
-		ResponseBuild(w, Resp)
+	//redirect_to from form parse
+	redirectTo := r.Form.Get("redirect_to")
+	if len(redirectTo) == 0 {
+		redirectTo = r.Referer()
 	}
-	if r.Method == http.MethodGet {
-		//redirect_to from form parse
-		redirectTo := r.Form.Get("redirect_to")
-		//redirect to client with jwtcode
-		redirectURL, err := urlAddParam(redirectTo, "access_token", AccessToken.RawStr)
-		if err != nil {
-			ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-			return
-		}
-		redirectURL, errR := urlAddParam(redirectURL, "refresh_token", RefreshToken.RawStr)
-		if errR != nil {
-			ResponseBuild(w, APIResp{Response: "", Error: errR.Error()})
-			return
-		}
-		// if is a rest request, redirect may be empty
-		// we check redirect only from login call
-		if len(redirectTo) == 0 {
-			err := fmt.Errorf("wrong redirect")
-			ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-			return
-		}
-		http.Redirect(w, r, redirectURL, 302)
+	if len(redirectTo) == 0 {
+		time.Sleep(time.Second * 5)
+		//return 406
+		w.WriteHeader(http.StatusNotAcceptable)
 		return
 	}
-
+	//redirect to client with jwtcode
+	redirectURL, err := urlAddParam(redirectTo, "access_token", AccessToken.RawStr)
+	if err != nil {
+		time.Sleep(time.Second * 5)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, redirectURL, 302)
+	return
 }
 
 func urlAddParam(inpath, name, value string) (outpath string, err error) {

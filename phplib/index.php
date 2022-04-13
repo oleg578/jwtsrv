@@ -41,6 +41,9 @@ if ($_GET) {
     print_r($user); // token payload
     echo "</pre>";
     echo "<hr>";
+    echo "<pre>";
+    print_r($user);
+    echo "<hr>";
     echo "<p>User: ". $user->eml . "</p>";
     echo "<p>Expiration: ". gmdate(DateTime::ISO8601, $user->exp) . "</p>";
 }

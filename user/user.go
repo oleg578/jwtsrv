@@ -20,15 +20,17 @@ type Claim struct {
 type User struct {
 	ID        string  `json:"ID"`
 	Email     string  `json:"Email"`
+	Nickname  string  `json:"Nickname"`
 	Password  string  `json:"Password"`
 	SecretKey string  `json:"SecretKey"`
 	Claims    []Claim `json:"Claims"` //claims for each application
 }
 
-func New(id, email, pswd, secret string) *User {
+func New(id, email, nickname, pswd, secret string) *User {
 	return &User{
 		ID:        strings.TrimSpace(id),
 		Email:     strings.TrimSpace(email),
+		Nickname:  strings.TrimSpace(nickname),
 		Password:  strings.TrimSpace(pswd),
 		SecretKey: strings.TrimSpace(secret),
 	}

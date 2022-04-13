@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -36,21 +37,16 @@ func main() {
 	defer func() { _ = Pool.Close() }()
 	user1ID := uuid.New().String()
 	user1Email := "oleg.nagornij@gmail.com"
+	nick := "Oleh"
 	user1Pswd := "corner578"
 	secret := "secret"
-	user1 := user.New(user1ID, user1Email, user1Pswd, secret)
+	user1 := user.New(user1ID, user1Email, nick, user1Pswd, secret)
 	asserts := make(user.AssertsMap)
 	asserts["role"] = "admin"
-	claim := user.NewClaim("fixmytoys.com", asserts)
+	claim := user.NewClaim("*", asserts)
 	user1.Claims = append(user1.Claims, *claim)
 	if err := user1.Save(); err != nil {
 		log.Fatalln("save error: ", err)
 	}
-	log.Printf("%+v", user1)
-	//os.Exit(0)
-	tUser, err := user.GetByID(user1ID)
-	if err != nil {
-		log.Fatalln("get user error: ", err)
-	}
-	log.Printf("%+v\n", tUser)
+	fmt.Printf("%+v\n", user1)
 }

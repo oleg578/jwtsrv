@@ -30,9 +30,10 @@ func newPool(addr string, db int) *redis.Pool {
 func TestUser_Save(t *testing.T) {
 	id := uuid.New().String()
 	newuserEmail := "oleg.nagornij@gmail.com"
+	nick := "Oleh"
 	newuserPswd := "corner578"
 	secret := "secret"
-	newuser := New(id, newuserEmail, newuserPswd, secret)
+	newuser := New(id, newuserEmail, nick, newuserPswd, secret)
 	asserts := make(AssertsMap)
 	asserts["role"] = "admin"
 	asserts["account"] = "*"
@@ -103,6 +104,7 @@ func TestNewClaim(t *testing.T) {
 func TestNew(t *testing.T) {
 	id := uuid.New().String()
 	email := "oleg.nagornij@gmail.com"
+	nick := "Oleh"
 	pswd := "corner578"
 	secret := "secret"
 	userT := &User{
@@ -114,6 +116,7 @@ func TestNew(t *testing.T) {
 	type args struct {
 		id     string
 		email  string
+		nick   string
 		pswd   string
 		secret string
 	}
@@ -127,6 +130,7 @@ func TestNew(t *testing.T) {
 			args{
 				id,
 				email,
+				nick,
 				pswd,
 				secret,
 			},
@@ -135,7 +139,7 @@ func TestNew(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := New(tt.args.id, tt.args.email, tt.args.pswd, tt.args.secret); !reflect.DeepEqual(got, tt.want) {
+			if got := New(tt.args.id, tt.args.email, tt.args.nick, tt.args.pswd, tt.args.secret); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("New() = %v, want %v", got, tt.want)
 			}
 		})
@@ -144,9 +148,10 @@ func TestNew(t *testing.T) {
 
 func BenchmarkSave(b *testing.B) {
 	newuserEmail := "oleg.nagornij@gmail.com"
+	nick := "Oleh"
 	newuserPswd := "corner578"
 	secret := "secret"
-	newuser := New("", newuserEmail, newuserPswd, secret)
+	newuser := New("", newuserEmail, nick, newuserPswd, secret)
 	asserts := make(AssertsMap)
 	asserts["role"] = "admin"
 	asserts["account"] = "*"
@@ -160,9 +165,10 @@ func BenchmarkSave(b *testing.B) {
 
 func TestGetByEmail(t *testing.T) {
 	user1Email := "oleg.nagornij@gmail.com"
+	nick := "Oleh"
 	user1Pswd := "corner578"
 	secret := "secret"
-	user1 := New("", user1Email, user1Pswd, secret)
+	user1 := New("", user1Email, nick, user1Pswd, secret)
 	asserts := make(AssertsMap)
 	asserts["role"] = "admin"
 	asserts["account"] = "*"

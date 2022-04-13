@@ -1,0 +1,14 @@
+{
+    "ID": "8ebba821-343f-4861-9a34-2d7d56d76e40",
+    "Email": "oleg.nagornij@gmail.com",
+    "Password": "corner578",
+    "SecretKey": "secret",
+    "Claims": [
+        {
+            "Resource": "*",
+            "Assert": {
+                "role": "admin"
+            }
+        }
+    ]
+}
