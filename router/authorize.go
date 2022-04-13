@@ -9,8 +9,6 @@ import (
 	"time"
 
 	"github.com/oleg578/jwtsrv/appflags"
-	"github.com/oleg578/jwtsrv/token"
-	"github.com/oleg578/jwtsrv/utils"
 	logger "github.com/oleg578/loglog"
 
 	"github.com/google/uuid"
@@ -28,6 +26,9 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	var (
 		Resp APIResp
 	)
+	if appflags.Debug {
+		log.Printf("AuthorizeHandler request: %+v\n", r)
+	}
 	if r.Method != http.MethodPost && r.Method != http.MethodGet {
 		err := fmt.Errorf("wrong method")
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
@@ -56,20 +57,18 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 		return
 	}
+	if appflags.Debug {
+		log.Printf("form: %+v\n", r.Form)
+	}
 	eml, pswd, errFh := formHandle(r)
 	if errFh != nil {
 		ResponseBuild(w, APIResp{Response: "", Error: errFh.Error()})
 		return
 	}
-	//redirect_to from form parse
-	redirectTo := r.Form.Get("redirect_to")
-	// if is a rest request, redirect may be empty
-	// we check redirect only from login call
-	if len(redirectTo) == 0 {
-		err := fmt.Errorf("wrong redirect")
-		ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-		return
+	if appflags.Debug {
+		log.Printf("email: %s, passwd: %s", eml, pswd)
 	}
+
 	//payload build
 	payload, secret, errPb := payloadBuild(ref, eml, pswd)
 	if errPb != nil {
@@ -88,49 +87,53 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseBuild(w, APIResp{Response: "", Error: errRef.Error()})
 		return
 	}
-	Resp.Response = struct {
-		AccessToken  string `json:"access_token"`
-		RefreshToken string `json:"refresh_token"`
-	}{
-		AccessToken.RawStr,
-		RefreshToken.RawStr,
-	}
 	//if call method is get return redirect to with jwtcode
 	//if method is post return with ResponseBuild
+	if r.Method == http.MethodPost {
+		Resp.Response = struct {
+			AccessToken  string `json:"access_token"`
+			RefreshToken string `json:"refresh_token"`
+		}{
+			AccessToken.RawStr,
+			RefreshToken.RawStr,
+		}
+		ResponseBuild(w, Resp)
+	}
 	if r.Method == http.MethodGet {
-		//generate code and save Bag
-		b := &token.Bag{
-			AccessToken:  AccessToken.RawStr,
-			RefreshToken: RefreshToken.RawStr,
-		}
-		code := utils.MD5Hash(AccessToken.RawStr)
-		if err := b.Save(code); err != nil {
-			logger.Printf("tokens store error: %v", err)
-			ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-			return
-		}
-		//redirect
-		moveTo, err := urlAddRedirect(redirectTo, code)
+		//redirect_to from form parse
+		redirectTo := r.Form.Get("redirect_to")
+		//redirect to client with jwtcode
+		redirectURL, err := urlAddParam(redirectTo, "access_token", AccessToken.RawStr)
 		if err != nil {
 			ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
 			return
 		}
-		http.Redirect(w, r, moveTo, 302)
+		redirectURL, errR := urlAddParam(redirectURL, "refresh_token", RefreshToken.RawStr)
+		if errR != nil {
+			ResponseBuild(w, APIResp{Response: "", Error: errR.Error()})
+			return
+		}
+		// if is a rest request, redirect may be empty
+		// we check redirect only from login call
+		if len(redirectTo) == 0 {
+			err := fmt.Errorf("wrong redirect")
+			ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
+			return
+		}
+		http.Redirect(w, r, redirectURL, 302)
 		return
 	}
-	if r.Method == http.MethodPost {
-		ResponseBuild(w, Resp)
-	}
+
 }
 
-func urlAddRedirect(inpath, code string) (outpath string, err error) {
+func urlAddParam(inpath, name, value string) (outpath string, err error) {
 	u, errParse := url.Parse(inpath)
 	if errParse != nil {
 		err = errParse
 		return
 	}
 	q := u.Query()
-	q.Add("code", code)
+	q.Add(name, value)
 	u.RawQuery, err = url.QueryUnescape(q.Encode())
 	outpath = u.String()
 	return
