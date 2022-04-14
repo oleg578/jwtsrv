@@ -1,6 +1,7 @@
 {
-    "ID": "8ebba821-343f-4861-9a34-2d7d56d76e40",
+    "ID": "ae21cb95-295b-4a71-ade5-e3ecae011e6f",
     "Email": "oleg.nagornij@gmail.com",
+    "Nickname": "Oleh",
     "Password": "corner578",
     "SecretKey": "secret",
     "Claims": [
@@ -8,6 +9,12 @@
             "Resource": "*",
             "Assert": {
                 "role": "admin"
+            }
+        },
+        {
+            "Resource": "localhost",
+            "Assert": {
+                "role": "superadmin"
             }
         }
     ]

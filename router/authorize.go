@@ -158,10 +158,24 @@ func payloadBuild(referer, eml, pswd string) (payload map[string]interface{}, se
 	texp := tm.Add(time.Second * config.AccessDuration)
 	payload["uid"] = u.ID
 	payload["eml"] = u.Email
+	payload["nick"] = u.Nickname
 	payload["exp"] = texp.Unix()
+	payload["role"] = "guest"
+
 	for _, c := range u.Claims {
+		if appflags.Debug {
+			log.Printf("claim: %+v", c)
+		}
+		switch {
+		case c.Resource == referer:
+			payload["role"] = c.Asserts["role"]
+		case c.Resource == "*":
+			payload["role"] = c.Asserts["role"]
+		default:
+			payload["role"] = "guest"
+		}
 		if c.Resource == referer {
-			payload["clm"] = c
+			break
 		}
 	}
 	sr := strings.NewReader(payload["uid"].(string) + u.SecretKey)
