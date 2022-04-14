@@ -1,5 +1,5 @@
 {
-    "ID": "ae21cb95-295b-4a71-ade5-e3ecae011e6f",
+    "ID": "42ffbb99-a52c-49ba-88e4-4755b081caa6",
     "Email": "oleg.nagornij@gmail.com",
     "Nickname": "Oleh",
     "Password": "corner578",
@@ -7,15 +7,11 @@
     "Claims": [
         {
             "Resource": "*",
-            "Assert": {
-                "role": "admin"
-            }
+            "Role": "admin"
         },
         {
             "Resource": "localhost",
-            "Assert": {
-                "role": "superadmin"
-            }
+            "Role": "superadmin"
         }
     ]
 }

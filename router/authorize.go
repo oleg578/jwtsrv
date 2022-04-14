@@ -168,9 +168,9 @@ func payloadBuild(referer, eml, pswd string) (payload map[string]interface{}, se
 		}
 		switch {
 		case c.Resource == referer:
-			payload["role"] = c.Asserts["role"]
+			payload["role"] = c.Role
 		case c.Resource == "*":
-			payload["role"] = c.Asserts["role"]
+			payload["role"] = c.Role
 		default:
 			payload["role"] = "guest"
 		}

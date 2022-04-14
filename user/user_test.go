@@ -34,12 +34,9 @@ func TestUser_Save(t *testing.T) {
 	newuserPswd := "corner578"
 	secret := "secret"
 	newuser := New(id, newuserEmail, nick, newuserPswd, secret)
-	asserts := make(AssertsMap)
-	asserts["role"] = "admin"
-	asserts["account"] = "*"
 	claim := NewClaim(
-		uuid.New().String(),
-		asserts)
+		"*",
+		"admin")
 	newuser.Claims = append(newuser.Claims, *claim)
 	tests := []struct {
 		name     string
@@ -57,45 +54,6 @@ func TestUser_Save(t *testing.T) {
 			u := tt.testuser
 			if err := u.Save(); (err != nil) != tt.wantErr {
 				t.Errorf("User.Save() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestNewClaim(t *testing.T) {
-	rsc := "specialresource.com"
-	asserts := make(AssertsMap, 3)
-	asserts["role"] = "admin"
-	asserts["account"] = "12846978"
-	asserts["another"] = "something"
-	clm := &Claim{
-		Resource: rsc,
-		Asserts:  asserts,
-	}
-	type args struct {
-		appid    string
-		resource string
-		asserts  AssertsMap
-	}
-	tests := []struct {
-		name string
-		args args
-		want *Claim
-	}{
-		{
-			"NewClaimTest",
-			args{
-				rsc,
-				rsc,
-				asserts,
-			},
-			clm,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewClaim(tt.args.appid, tt.args.asserts); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewClaim() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -146,33 +104,15 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func BenchmarkSave(b *testing.B) {
-	newuserEmail := "oleg.nagornij@gmail.com"
-	nick := "Oleh"
-	newuserPswd := "corner578"
-	secret := "secret"
-	newuser := New("", newuserEmail, nick, newuserPswd, secret)
-	asserts := make(AssertsMap)
-	asserts["role"] = "admin"
-	asserts["account"] = "*"
-	claim := NewClaim(uuid.New().String(), asserts)
-	newuser.Claims = append(newuser.Claims, *claim)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		newuser.Save()
-	}
-}
-
 func TestGetByEmail(t *testing.T) {
 	user1Email := "oleg.nagornij@gmail.com"
 	nick := "Oleh"
 	user1Pswd := "corner578"
 	secret := "secret"
 	user1 := New("", user1Email, nick, user1Pswd, secret)
-	asserts := make(AssertsMap)
-	asserts["role"] = "admin"
-	asserts["account"] = "*"
-	claim := NewClaim(uuid.New().String(), asserts)
+	claim := NewClaim(
+		"*",
+		"admin")
 	user1.Claims = append(user1.Claims, *claim)
 	type args struct {
 		email string

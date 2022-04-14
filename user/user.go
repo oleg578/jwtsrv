@@ -9,12 +9,10 @@ import (
 	"github.com/oleg578/jwtsrv/config"
 )
 
-type AssertsMap map[string]string
-
 // User can have asserts for each Application ID
 type Claim struct {
-	Resource string     `json:"Resource"`
-	Asserts  AssertsMap `json:"Assert"` // map[string]string resource -> role
+	Resource string `json:"Resource"`
+	Role     string `json:"Role"`
 }
 
 type User struct {
@@ -36,15 +34,11 @@ func New(id, email, nickname, pswd, secret string) *User {
 	}
 }
 
-func NewClaim(resource string, asserts AssertsMap) *Claim {
-	claim := &Claim{
+func NewClaim(resource, role string) *Claim {
+	return &Claim{
 		Resource: resource,
-		Asserts:  make(AssertsMap, len(asserts)),
+		Role:     role,
 	}
-	for key, val := range asserts {
-		claim.Asserts[key] = val
-	}
-	return claim
 }
 
 func (u *User) Save() error {

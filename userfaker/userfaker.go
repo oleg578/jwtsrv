@@ -41,13 +41,9 @@ func main() {
 	user1Pswd := "corner578"
 	secret := "secret"
 	user1 := user.New(user1ID, user1Email, nick, user1Pswd, secret)
-	asserts := make(user.AssertsMap)
-	asserts["role"] = "admin"
-	claim := user.NewClaim("*", asserts)
+	claim := user.NewClaim("*", "admin")
 	user1.Claims = append(user1.Claims, *claim)
-	asserts1 := make(user.AssertsMap)
-	asserts1["role"] = "superadmin"
-	claim1 := user.NewClaim("localhost", asserts1)
+	claim1 := user.NewClaim("localhost", "superadmin")
 	user1.Claims = append(user1.Claims, *claim1)
 	if err := user1.Save(); err != nil {
 		log.Fatalln("save error: ", err)
