@@ -8,33 +8,9 @@ href='http://localhost/login?".
 "&redirect_to=".$localURL."'>Auth</a></div>"; // auth link to accounts.bwretail.com
 
 if ($_GET) {
-    /*
-    echo "<section><pre>";
-    var_dump($_SERVER);
-    var_dump($_GET);
-    echo "</pre></section>";
-    echo "<hr>";
-    */
     $jwtToken = $_GET['access_token'];
-    /*
-    echo "<pre>";
-    var_dump($jwtToken);
-    echo "</pre>";
-    echo "<hr>";
-    */
-
     $jwtArr = array_combine(['header', 'payload', 'signature'], explode('.', $jwtToken));
-
     echo "<pre>";
-    /*
-    var_dump($jwtArr);
-    echo "</pre>";
-    echo "<hr>";
-    echo "<pre>";
-    */
-    //print_r(base64_decode($jwtArr['header']));
-    //echo "</pre>";
-    //echo "<hr>";
     echo "<pre>";
     $payload = base64_decode($jwtArr['payload']);
     $user = json_decode($payload);
