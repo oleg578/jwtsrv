@@ -12,7 +12,6 @@ email=oleg.nagornij@gmail.com&passwd=corner578
 GET http://localhost/authorize
 ?email=oleg.nagornij@gmail.com
 &passwd=corner578
-&redirect_to=localhost
 &app_id=a379ed35-a8e0-48c1-bfce-dc5eed92239c
 
 ###wrong user

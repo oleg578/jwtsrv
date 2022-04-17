@@ -89,9 +89,13 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		redirectTo = r.Referer()
 	}
 	if len(redirectTo) == 0 {
-		time.Sleep(time.Second * 5)
-		//return 406
-		w.WriteHeader(http.StatusNotAcceptable)
+		Resp := APIResp{}
+		Resp.Response = struct {
+			AccessToken string `json:"access_token"`
+		}{
+			AccessToken.RawStr,
+		}
+		ResponseBuild(w, Resp)
 		return
 	}
 	//redirect to client with jwtcode
