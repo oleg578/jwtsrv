@@ -3,7 +3,6 @@ package router
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"net/http"
 	"time"
@@ -62,8 +61,10 @@ func renderTmpl(w http.ResponseWriter, data interface{}, view string) {
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		RedirectTo string
+		AppID      string
 	}{
 		r.Context().Value("redirect_to").(string),
+		r.Context().Value("app_id").(string),
 	}
 	renderTmpl(w, data, "login.html")
 }
@@ -81,17 +82,10 @@ func AppCheckMiddleware(next http.Handler) http.Handler {
 			//get from URL query
 			moveTo = q.Get("redirect_to")
 		}
-		// find allowed host
-		exists := true
-		//if errRsc != nil {
-		//	ResponseBuild(w, APIResp{Response: "", Error: errRsc.Error()})
-		//	return
-		//}
-		if !exists {
-			err := fmt.Errorf("wrong application")
-			ResponseBuild(w, APIResp{Response: "", Error: err.Error()})
-			return
-		}
+		appId := q.Get("app_id")
+
+		//propagate app_d over context
+		r = r.WithContext(context.WithValue(r.Context(), "app_id", appId))
 		//propagate redirect_to over context
 		r = r.WithContext(context.WithValue(r.Context(), "redirect_to", moveTo))
 		next.ServeHTTP(w, r)

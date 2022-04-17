@@ -1,0 +1,8 @@
+https://accounts.google.com/o/oauth2/auth
+
+?response_type=code
+&redirect_uri=https://bwretail.dev/index.php
+&client_id=764616255710-tga4r3kngv3fb65v6h2gsvnjtok37kja.apps.googleusercontent.com
+&scope=https://www.googleapis.com/auth/userinfo.profile+https://www.googleapis.com/auth/userinfo.email
+&access_type=offline
+&approval_prompt=force

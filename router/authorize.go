@@ -5,16 +5,12 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/oleg578/jwtsrv/appflags"
-	logger "github.com/oleg578/loglog"
 
-	"github.com/google/uuid"
 	"github.com/oleg578/jwts"
 	"github.com/oleg578/jwtsrv/config"
-	"github.com/oleg578/jwtsrv/user"
 )
 
 //Authorize route
@@ -59,7 +55,7 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	if appflags.Debug {
 		log.Printf("form: %+v\n", r.Form)
 	}
-	eml, pswd, errFh := formHandle(r)
+	eml, pswd, appid, errFh := formHandle(r)
 	if errFh != nil {
 		time.Sleep(time.Second * 5)
 		w.WriteHeader(http.StatusBadRequest)
@@ -69,11 +65,14 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("email: %s, passwd: %s", eml, pswd)
 	}
 	//payload build
-	payload, secret, errPb := payloadBuild(ref, eml, pswd)
+	payload, secret, errPb := payloadBuild(ref, eml, pswd, appid)
 	if errPb != nil {
 		time.Sleep(time.Second * 5)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
+	}
+	if appflags.Debug {
+		fmt.Printf("payload: %+v\nsecret: %v\n", payload, secret)
 	}
 	AccessToken, err := jwts.CreateTokenHS256(payload, secret)
 	if err != nil {
@@ -125,7 +124,7 @@ func setExpiration() int64 {
 	return tref.Unix()
 }
 
-func formHandle(r *http.Request) (email, passwd string, err error) {
+func formHandle(r *http.Request) (email, passwd, appid string, err error) {
 	//get and test email
 	email = r.Form.Get("email")
 	if len(email) == 0 {
@@ -138,54 +137,11 @@ func formHandle(r *http.Request) (email, passwd string, err error) {
 		err = fmt.Errorf("wrong password")
 		return
 	}
-	return
-}
-
-func payloadBuild(referer, eml, pswd string) (payload map[string]interface{}, secret string, err error) {
-	payload = make(map[string]interface{})
-	//try to get user
-	logger.Printf("user: %s, passwd: %s", eml, pswd)
-	u, err := user.GetByEmail(eml)
-	if err != nil {
-		return nil, "", err
-	}
-	//test user passwd
-	if u.Password != pswd {
-		err = fmt.Errorf("wrong password")
+	//get and test app_id
+	appid = r.Form.Get("app_id")
+	if len(appid) == 0 {
+		err = fmt.Errorf("wrong app_id")
 		return
 	}
-	tm := time.Now()
-	texp := tm.Add(time.Second * config.AccessDuration)
-	payload["uid"] = u.ID
-	payload["eml"] = u.Email
-	payload["nick"] = u.Nickname
-	payload["exp"] = texp.Unix()
-	payload["role"] = "guest"
-
-	for _, c := range u.Claims {
-		if appflags.Debug {
-			log.Printf("claim: %+v", c)
-		}
-		switch {
-		case c.Resource == referer:
-			payload["role"] = c.Role
-		case c.Resource == "*":
-			payload["role"] = c.Role
-		default:
-			payload["role"] = "guest"
-		}
-		if c.Resource == referer {
-			break
-		}
-	}
-	sr := strings.NewReader(payload["uid"].(string) + u.SecretKey)
-	jti, errJti := uuid.NewRandomFromReader(sr)
-	if errJti != nil {
-		jti, errJti = uuid.NewRandom()
-		if errJti != nil {
-			jti = uuid.New()
-		}
-	}
-	payload["jti"] = jti.String()
 	return
 }
