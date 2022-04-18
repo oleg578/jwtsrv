@@ -1,5 +1,10 @@
 <?php
 
+function base64url_encode($str)
+{
+    return rtrim(strtr(base64_encode($str), '+/', '-_'), '=');
+}
+
 function is_jwt_valid($jwt, $secret = 'secret')
 {
     // split the jwt
@@ -20,10 +25,20 @@ function is_jwt_valid($jwt, $secret = 'secret')
 
     // verify it matches the signature provided in the jwt
     $is_signature_valid = ($base64_url_signature === $signature_provided);
-
     if ($is_token_expired || !$is_signature_valid) {
         return false;
     } else {
         return true;
     }
+}
+
+$jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWwiOiJvbGVnLm5hZ29ybmlqQGdtYWlsLmNvbSIsImV4cCI6MTY1MDMzODUxMywianRpIjoiMzQzMjY2NjYtNjI2Mi00OTM5LWFkNjEtMzUzMjYzMmQzNDM5IiwibmljayI6Ik9sZWgiLCJyb2xlIjoiZ3Vlc3QiLCJ1aWQiOiI0MmZmYmI5OS1hNTJjLTQ5YmEtODhlNC00NzU1YjA4MWNhYTYifQ.p4JxPmI7aarJA9OKIFPL0o_4d_FuednsNv5RALk3LAY";
+
+$secret = "3dp9gudw0l19yr9ois8iu9b3220qemn8";
+
+$res = is_jwt_valid($jwt, $secret);
+if ($res) {
+    echo "Valid JWT" . PHP_EOL;
+} else {
+    echo "Invalid JWT" . PHP_EOL;
 }
