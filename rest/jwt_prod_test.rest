@@ -1,38 +1,8 @@
+###
+GET https://accounts.bwretail.com HTTP/1.1
 
 ###normal
-POST https://accounts.bwretail.com/authorize HTTP/1.1
-X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239c
-content-type: application/x-www-form-urlencoded
-
-email=oleg.nagornij@gmail.com&passwd=corner578
-
-###wrong appid
-POST https://accounts.bwretail.com/authorize HTTP/1.1
-X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239d
-content-type: application/x-www-form-urlencoded
-
-email=oleg.nagornij@gmail.com&passwd=corner578
-
-###wrong user
-POST https://accounts.bwretail.com/authorize HTTP/1.1
-X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239c
-content-type: application/x-www-form-urlencoded
-
-email=unknown.user@gmail.com&passwd=corner578
-
-###wrong password
-POST https://accounts.bwretail.com/authorize HTTP/1.1
-X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239c
-content-type: application/x-www-form-urlencoded
-
-email=oleg.nagornij@gmail.com&passwd=wrongpasswd
-
-
-###get tokens after login by code
-GET https://accounts.bwretail.com/origin?code=0def9001e9a01f4c8eb1f3015959142b HTTP/1.1
-X-AppID: a379ed35-a8e0-48c1-bfce-dc5eed92239c
-
-###get tokens after login by code without header
-GET https://accounts.bwretail.com/origin
-?code=0def9001e9a01f4c8eb1f3015959142b
-&application_id=a379ed35-a8e0-48c1-bfce-dc5eed92239c
+GET https://accounts.bwretail.com/authorize
+?email=oleg.nagornij@gmail.com
+&passwd=corner578
+&app_id=a379ed35-a8e0-48c1-bfce-dc5eed92239c
