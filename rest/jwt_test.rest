@@ -2,13 +2,6 @@
 GET http://localhost HTTP/1.1
 
 ###normal
-POST http://localhost/authorize HTTP/1.1
-Referer: bw-chat.com
-content-type: application/x-www-form-urlencoded
-
-email=oleg.nagornij@gmail.com&passwd=corner578
-
-###normal
 GET http://localhost/authorize
 ?email=oleg.nagornij@gmail.com
 &passwd=corner578

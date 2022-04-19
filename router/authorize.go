@@ -2,12 +2,12 @@ package router
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
 
 	"github.com/oleg578/jwtsrv/appflags"
+	logger "github.com/oleg578/loglog"
 
 	"github.com/oleg578/jwts"
 	"github.com/oleg578/jwtsrv/config"
@@ -20,7 +20,7 @@ import (
 // return redirect with access_token
 func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	if appflags.Debug {
-		log.Printf("AuthorizeHandler request: %+v\n", r)
+		logger.Printf("AuthorizeHandler request: %+v\n", r)
 	}
 	if r.Method != http.MethodGet {
 		time.Sleep(time.Second * 5)
@@ -35,8 +35,8 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	u, errURL := url.Parse(r.Referer())
 	if appflags.Debug {
-		log.Printf("request referer: %s", r.Referer())
-		log.Printf("referer parsed: %+v", u)
+		logger.Printf("request referer: %s", r.Referer())
+		logger.Printf("referer parsed: %+v", u, errURL)
 	}
 	if errURL != nil {
 		time.Sleep(time.Second * 5)
@@ -45,24 +45,26 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	ref := u.Host
 	if appflags.Debug {
-		log.Printf("referer: %s", ref)
+		logger.Printf("referer: %s", ref)
 	}
 	if err := r.ParseForm(); err != nil {
+		logger.Printf("parse form error: %s", err.Error())
 		time.Sleep(time.Second * 5)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if appflags.Debug {
-		log.Printf("form: %+v\n", r.Form)
+		logger.Printf("form: %+v\n", r.Form)
 	}
 	eml, pswd, appid, errFh := formHandle(r)
 	if errFh != nil {
+		logger.Printf("form handle error: %s", errFh.Error())
 		time.Sleep(time.Second * 5)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if appflags.Debug {
-		log.Printf("email: %s, passwd: %s", eml, pswd)
+		logger.Printf("email: %s, passwd: %s", eml, pswd)
 	}
 	//payload build
 	payload, secret, errPb := payloadBuild(ref, eml, pswd, appid)
@@ -72,7 +74,7 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if appflags.Debug {
-		fmt.Printf("payload: %+v\nsecret: %v\n", payload, secret)
+		logger.Printf("payload: %+v\nsecret: %v\n", payload, secret)
 	}
 	AccessToken, err := jwts.CreateTokenHS256(payload, secret)
 	if err != nil {
@@ -85,6 +87,9 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	//if call method is get return redirect to with jwtcode
 	//redirect_to from form parse
 	redirectTo := r.Form.Get("redirect_to")
+	if appflags.Debug {
+		logger.Printf("redirect_to: %s", redirectTo)
+	}
 	if len(redirectTo) == 0 {
 		redirectTo = r.Referer()
 	}
