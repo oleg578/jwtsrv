@@ -2,7 +2,6 @@ package router
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -46,18 +45,14 @@ func payloadBuild(referer, eml, pswd, appid string) (payload map[string]interfac
 
 	for _, c := range u.Claims {
 		if appflags.Debug {
-			log.Printf("claim: %+v", c)
-		}
-		switch {
-		case c.Resource == referer:
-			payload["role"] = c.Role
-		case c.Resource == "*":
-			payload["role"] = c.Role
-		default:
-			payload["role"] = "guest"
+			logger.Printf("claim: %+v", c)
 		}
 		if c.Resource == referer {
+			payload["role"] = c.Role
 			break
+		}
+		if c.Resource == "*" {
+			payload["role"] = c.Role
 		}
 	}
 	sr := strings.NewReader(payload["uid"].(string) + u.SecretKey)
