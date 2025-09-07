@@ -7,15 +7,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/oleg578/jwtsrv/token"
-	"github.com/oleg578/jwtsrv/utils"
+	"jwtsrv/token"
+	"jwtsrv/utils"
 	logger "github.com/oleg578/loglog"
 
 	"github.com/google/uuid"
 	"github.com/oleg578/jwts"
-	appreg "github.com/oleg578/jwtsrv/appregister"
-	"github.com/oleg578/jwtsrv/config"
-	"github.com/oleg578/jwtsrv/user"
+	appreg "jwtsrv/appregister"
+	"jwtsrv/config"
+	"jwtsrv/user"
 )
 
 //Authorize route

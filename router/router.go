@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	appreg "github.com/oleg578/jwtsrv/appregister"
+	appreg "jwtsrv/appregister"
 	logger "github.com/oleg578/loglog"
 )
 
